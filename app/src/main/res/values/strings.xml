@@ -1,0 +1,271 @@
+<!--
+// string constants from xml: getString(R.string.name_of_definition)
+// in xml: android:text="@string/name_of_definition"
+-->
+<resources>
+    <string name="app_name">Media Collection</string>
+
+    <string name="title_main_activity">Media Collection</string>
+    <string name="title_settings_activity">Settings</string>
+    <string name="title_item_activity">Item</string>
+
+    <string name="text_yes">Yes</string>
+    <string name="text_no">No</string>
+    <string name="text_ok">OK</string>
+    <string name="text_cancel">Cancel</string>
+    <string name="text_back">Back</string>
+
+    <!-- MainActivity -->
+    <string name="main_menu_search">Search</string>
+    <string name="main_menu_filter">Filter</string>
+    <string name="main_menu_sort">Sort</string>
+    <string name="main_menu_synchronize">Synchronize</string>
+    <string name="main_menu_export">Export</string>
+    <string name="main_menu_import">Import</string>
+    <string name="main_menu_settings">Settings</string>
+    <string name="main_menu_statistic">Statistic</string>
+
+    <string name="main_menu_search_hint">Search…</string>
+
+    <string name="main_menu_search_content_description">Search for items</string>
+    <string name="main_menu_search_back_content_description">Close search</string>
+    <string name="main_floating_button_content_description">Add item</string>
+    <string name="main_progressbar_text">0 %</string>
+
+    <string name="main_sort">Direction…</string>
+    <string name="main_sort_ascending">Ascending</string>
+    <string name="main_sort_descending">Descending</string>
+
+    <string name="main_no_db">SQLite database is not available.</string>
+    <string name="main_no_filter_columns">Filter columns are not initialized.</string>
+    <string name="main_no_sort_columns">Sort columns are not initialized.</string>
+
+    <string name="main_field_title">Title</string>
+    <string name="main_field_originaltitle">Original title</string>
+    <string name="main_field_publicationyear">Publication year</string>
+    <string name="main_field_type">Type</string>
+    <string name="main_field_subtype">Medium</string>
+    <string name="main_field_filedunder">Filed under</string>
+    <string name="main_field_lastseen">Last seen</string>
+    <string name="main_field_lengthinminutes">Length in minutes</string>
+    <string name="main_field_languages">Languages</string>
+    <string name="main_field_subtitles">Subtitles</string>
+    <string name="main_field_directors">Directors</string>
+    <string name="main_field_screenwriters">Screenwriters</string>
+    <string name="main_field_cast">Cast</string>
+    <string name="main_field_specialfeatures">Special Features</string>
+    <string name="main_field_other">Other</string>
+
+    <string name="main_filter_overview">Filter overview</string>
+    <string name="main_filter_value_field">Value…</string>
+    <string name="main_filter_add_button">Add</string>
+    <string name="main_filter_delete_button">Delete</string>
+    <string name="main_filter_column_name">Filter column</string>
+    <string name="main_filter_value">Filter value</string>
+
+    <string name="main_sort_overview">Sort overview</string>
+    <string name="main_sort_add_button">Add</string>
+    <string name="main_sort_delete_button">Delete</string>
+    <string name="main_sort_column_name">Sort column</string>
+    <string name="main_sort_direction">Direction</string>
+
+    <string name="main_item_poster_content_description">Media Poster</string>
+    <string name="main_item_title_content_description">Media Title</string>
+
+    <string name="main_return_record_inserted">Record inserted.</string>
+    <string name="main_return_record_updated">Record updated.</string>
+    <string name="main_return_record_deleted">Record deleted.</string>
+
+    <string name="main_exception_open_output_stream">Failed to open output stream.</string>
+    <string name="main_exception_contentresolver_insert">Failed to resolve or create file.</string>
+
+    <string name="main_choose_filter">Please choose a column and a filter value.</string>
+    <string name="main_filter_chosen">Filter \'%1$s\' for column \'%2$s\' added.</string>
+    <string name="main_filter_removed">Filter \'%1$s\' removed.</string>
+    <string name="main_choose_sort">Please choose a column and a sort direction.</string>
+    <string name="main_sort_chosen">Sort for column \'%1$s\' with direction \'%2$s\' added.</string>
+    <string name="main_sort_removed">Sort for column \'%1$s\' removed.</string>
+
+    <string name="main_confirm_action">Confirm Action</string>
+    <string name="main_reset_filter_sort_question">Do you want to reset filters and sort criteria?</string>
+
+    <string name="main_no_records_found">No records found.</string>
+
+    <string name="main_data_exported">Data exported to \'%1$s\'.</string>
+
+    <string name="main_find_json_failure">Cannot find a .json.txt file.</string>
+    <string name="main_find_dat_failure">Cannot find a .dat.txt file.</string>
+    <string name="main_select_json_and_dat">Please select both a .json.txt and a .dat.txt file.</string>
+
+    <string name="main_import_question">"Are you sure you want to reset all data in database and import the file backup?"</string>
+    <string name="main_import_not_truncate_mediacollection">Could not truncate table \'mediacollection\'.</string>
+    <string name="main_import_not_truncate_languages">Could not truncate table \'language\'.</string>
+    <string name="main_import_finished">Database import finished.</string>
+
+    <string name="main_sync_auth_passphrase_missing">Synchronisation authentication passphrase is missing.</string>
+    <string name="main_sync_exception_post_all">Posting all data could not be finished. Synchronisation aborted. %1$d | %2$s</string>
+    <string name="main_sync_exception_update_deleted">Setting deleted timestamp failed for \'%1$s\'.</string>
+    <string name="main_sync_exception_fetch_all">Fetching all data could not be finished. Synchronisation aborted. %1$d | %2$s</string>
+    <string name="main_sync_finished">Synchronisation finished.</string>
+
+    <string name="main_app_unknown_version">Cannot get current app version.</string>
+
+    <!-- ItemViewActivity -->
+    <string name="itemview_menu_autofill">Autofill</string>
+    <string name="itemview_menu_delete">Delete</string>
+    <string name="itemview_menu_save">Save</string>
+
+    <string name="itemview_record_not_loaded">Record could not be loaded.</string>
+    <string name="itemview_tab_title_general">General</string>
+    <string name="itemview_tab_title_details">Details</string>
+    <string name="itemview_tab_title_poster">Poster</string>
+    <string name="itemview_tab_title_other">Other</string>
+
+    <string name="itemview_enter_title">Please enter a title.</string>
+    <string name="itemview_enter_type">Please choose a type.</string>
+    <string name="itemview_enter_originaltitle">Please enter an original title.</string>
+    <string name="itemview_enter_medium">Please choose a medium.</string>
+    <string name="itemview_enter_filedunder">Please enter a filed under.</string>
+    <string name="itemview_enter_publication_year">Please enter a publication year.</string>
+    <string name="itemview_enter_new_record_already_in_db">Record already exists.</string>
+    <string name="itemview_movie_url_null">URL for getting movie results is null.</string>
+    <string name="itemview_movie_details_url_null">URL for getting movie details is null.</string>
+    <string name="itemview_series_url_null">URL for getting series results is null.</string>
+    <string name="itemview_series_details_url_null">URL for getting series details is null.</string>
+    <string name="itemview_no_results_title">Found no results with title \'%1$s\'.</string>
+    <string name="itemview_no_results_movie_id">No movie details found with Id \'%1$d\'.</string>
+    <string name="itemview_no_results_series_id">No series details found with Id \'%1$d\'.</string>
+    <string name="itemview_no_date">No date</string>
+    <string name="itemview_auto_fill_subtitles">Select Subtitle(s)</string>
+    <string name="itemview_auto_fill_done">Autofill finished.</string>
+
+    <string name="itemview_unique_violation">Error: Record with original title and publication year already exists.</string>
+
+    <string name="itemview_delete">Delete</string>
+    <string name="itemview_delete_question">Do you want to delete this record?</string>
+    <string name="itemview_could_not_delete">Record could not be deleted.</string>
+
+    <string name="itemview_poster_updated">Poster updated.</string>
+    <string name="itemview_poster_no_temp">No temp record available.</string>
+    <string name="itemview_poster_invalid_url">Invalid url. Must end with \'.jpg\', \'.jpeg\', \'.png\' or \'.webp\' but ending is: \'%1$s\'.</string>
+
+    <string name="itemview_movie">Movie</string>
+    <string name="itemview_series">Series</string>
+    <string name="itemview_detailsfragment_not_seen">Not seen</string>
+    <string name="itemview_generalfragment_select_year">Select a year</string>
+    <string name="itemview_otherfragment_not_modified">Not modified</string>
+
+    <string name="itemview_general_title">Title…</string>
+    <string name="itemview_general_type">Type…</string>
+    <string name="itemview_general_publication_year">Publication year…</string>
+    <string name="itemview_general_original_title">Original title…</string>
+    <string name="itemview_general_medium">Medium…</string>
+    <string name="itemview_general_medium_bluray">Bluray</string>
+    <string name="itemview_general_medium_dvd">DVD</string>
+    <string name="itemview_general_medium_4k">4K</string>
+    <string name="itemview_general_filed_under">Filed under…</string>
+
+    <string name="itemview_details_last_seen">Last seen…</string>
+    <string name="itemview_details_length_in_minutes">Length in minutes…</string>
+    <string name="itemview_details_languages">Languages…</string>
+    <string name="itemview_details_subtitles">Subtitles…</string>
+    <string name="itemview_details_directors">Directors…</string>
+    <string name="itemview_details_screenwriters">Screenwriters…</string>
+    <string name="itemview_details_cast">Cast…</string>
+
+    <string name="itemview_poster">Poster</string>
+    <string name="itemview_poster_edit">Edit</string>
+    <string name="itemview_description_poster">Poster</string>
+    <string name="itemview_description_edit_poster">Edit poster</string>
+
+    <string name="itemview_other_special_features">Special features…</string>
+    <string name="itemview_other_other">Other…</string>
+    <string name="itemview_other_last_modified">Last Modified</string>
+
+    <string name="itemview_bsd_title">Select an item</string>
+    <string name="itemview_bsd_name">Name</string>
+    <string name="itemview_bsd_details">Original Title - Release Date</string>
+    <string name="itemview_bsd_details_content">%1$s - %2$s</string>
+    <string name="itemview_bsd_image">Poster preview</string>
+
+    <!-- SettingsActivity -->
+    <string name="settings_menu_overwrite_truststore">Overwrite truststore(s)</string>
+    <string name="settings_menu_delete_truststore">Delete truststore(s)</string>
+    <string name="settings_menu_reset">Database Reset</string>
+    <string name="settings_menu_factory_reset">Factory Reset</string>
+
+    <string name="settings_truststore_p12_overwritten">Truststore file \'.p12\' overwritten.</string>
+    <string name="settings_truststore_bks_overwritten">Truststore file \'.bks\' overwritten.</string>
+    <string name="settings_truststore_not_found">Please select a .p12 or a .bks file.</string>
+
+    <string name="settings_delete_truststore">Delete truststore(s)</string>
+    <string name="settings_delete_truststore_question">Are you sure you want to delete truststore in app files?</string>
+    <string name="settings_delete_truststore_p12_deleted">Truststore file \'.p12\' deleted.</string>
+    <string name="settings_delete_truststore_bks_deleted">Truststore file \'.bks\' deleted.</string>
+    <string name="settings_delete_truststore_none_deleted">No .p12 truststore or .bks truststore file found.</string>
+
+    <string name="settings_reset_data">Database Reset</string>
+    <string name="settings_reset_data_question">Are you sure you want to reset all data in database?</string>
+    <string name="settings_reset_data_no_db">SQLite database is not available.</string>
+    <string name="settings_reset_data_not_truncate_mediacollection">Could not truncate table \'mediacollection\'.</string>
+    <string name="settings_reset_data_not_truncate_languages">Could not truncate table \'language\'.</string>
+    <string name="settings_reset_data_finished">Database reset finished.</string>
+
+    <string name="settings_factory_reset">Factory Reset</string>
+    <string name="settings_factory_reset_question">Do you really want to reset the app to its factory configuration? All configuration and data will be lost.</string>
+
+    <string name="settings_category_general">General</string>
+    <string name="settings_general_locale">Language</string>
+    <string name="settings_general_show_media_title">Enable media title</string>
+    <string name="settings_general_backup_folder">Backup folder</string>
+    <string name="settings_general_swipe_refresh_dialog">Swipe refresh dialog</string>
+    <string name="settings_general_toolbar_offset">Toolbar Offset</string>
+    <string name="settings_general_toolbar_offset_summary">Choose a value between 0 and 100</string>
+    <string name="settings_general_toolbar_wait_autosearch">Toolbar Wait Autosearch(ms)</string>
+    <string name="settings_general_toolbar_wait_autosearch_summary">Choose a value between 0 and 5000</string>
+
+    <string name="settings_category_poster">Poster</string>
+    <string name="settings_poster_desired_width">Desired poster width</string>
+    <string name="settings_poster_overview_fixed_height">Overview fixed poster height (px)</string>
+    <string name="settings_poster_tmdb_url">TMDB poster URL</string>
+    <string name="settings_poster_movieposterdb_url">Movie poster db URL</string>
+
+    <string name="settings_category_search">Search</string>
+    <string name="settings_search_tmdb_url_movies">TMDB URL movie results</string>
+    <string name="settings_search_tmdb_url_movie_details">TMDB URL movie details</string>
+    <string name="settings_search_tmdb_url_series">TMDB URL series results</string>
+    <string name="settings_search_tmdb_url_series_details">TMDB URL series details</string>
+    <string name="settings_search_tmdb_target_language">TMDB Search target language</string>
+    <string name="settings_search_tmdb_api_key">TMDB API Key</string>
+
+    <string name="settings_category_sync">Synchronisation</string>
+    <string name="settings_sync_automatic">Automatic Synchronization</string>
+    <string name="settings_sync_server_host">Server Host/IP</string>
+    <string name="settings_sync_server_port">Server Port</string>
+    <string name="settings_sync_receive_buffer_size">Receive Buffer Size</string>
+    <string name="settings_sync_common_passphrase">Common passphrase</string>
+    <string name="settings_sync_auth_user">Authentication user</string>
+    <string name="settings_sync_auth_passphrase">Authentication passphrase</string>
+    <string name="settings_sync_truststore_filename">Truststore filename</string>
+    <string name="settings_sync_truststore_password">Truststore password</string>
+    <string name="settings_sync_receive_max_unknown_amount_in_mib">Receive max. unknown amount(MiB)</string>
+
+    <string name="settings_password_dialog_fragment_key_missing">Preference key for password dialog fragment is required.</string>
+    <string name="settings_password_dialog_fragment_title_missing">Title for password dialog fragment is required.</string>
+
+    <string name="settings_slider_dialog_fragment_key_missing">Preference key for slider dialog fragment is required.</string>
+    <string name="settings_slider_dialog_fragment_title_missing">Title for slider dialog fragment is required.</string>
+
+    <string name="settings_language_changed">Language changed. App will restart in %1$d sec.</string>
+    <string name="settings_value_empty">Setting value must not be empty.</string>
+    <string name="settings_general_backup_folder_false_start">Backup folder must start with \'Documents/\'.</string>
+    <string name="settings_value_is_not_integer">Setting value is not an integer.</string>
+    <string name="settings_value_not_https">Setting value does not start with \'https://\'.</string>
+    <string name="settings_value_missing_placeholder_one">Setting value does not contain \'%1\'.</string>
+    <string name="settings_value_missing_placeholder_two">Setting value does not contain \'%2\'.</string>
+    <string name="settings_value_missing_placeholder_three">Setting value does not contain \'%3\'.</string>
+    <string name="settings_value_length_to_low">Settings value length must be higher equal \'%1$d\'.</string>
+    <string name="settings_value_length_to_high">Settings value length must be lower equal \'%1$d\'.</string>
+    <string name="settings_value_to_low">Settings value must be higher equal \'%1$d\'.</string>
+    <string name="settings_value_to_high">Settings value must be lower equal \'%1$d\'.</string>
+</resources>

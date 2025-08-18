@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/mI_filter"
+        android:title="@string/main_menu_filter"
+        android:icon="@drawable/ic_filter"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/mI_sort"
+        android:title="@string/main_menu_sort"
+        android:icon="@drawable/ic_sort"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/mI_sync"
+        android:title="@string/main_menu_synchronize"
+        android:icon="@drawable/ic_sync"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/mI_export"
+        android:title="@string/main_menu_export"
+        android:icon="@drawable/ic_arrow_circle_down"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/mI_import"
+        android:title="@string/main_menu_import"
+        android:icon="@drawable/ic_arrow_circle_up"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/mI_settings"
+        android:title="@string/main_menu_settings"
+        android:icon="@drawable/ic_settings"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/mI_statistic"
+        android:title="@string/main_menu_statistic"
+        android:icon="@drawable/ic_statistic"
+        app:showAsAction="never" />
+</menu>

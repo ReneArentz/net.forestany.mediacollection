@@ -1,0 +1,491 @@
+{
+    "$id": "https://example.com/define.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "TMDB Series Details JSON Schema",
+    "type": "object",
+    "mapping": "net.forestany.mediacollection.search.data.SeriesDetails",
+    "properties": {
+        "adult": {
+            "type": "boolean",
+            "mapping": "Adult"
+        },
+        "backdrop_path": {
+            "type": "string",
+            "mapping": "BackdropPath"
+        },
+        "created_by": {
+            "type": "array",
+            "mapping": "CreatedBys:java.util.List",
+            "items": {
+                "CreatedByRef": {
+                    "type": "object",
+                    "mapping": "net.forestany.mediacollection.search.data.CreatedBy",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "mapping": "Id"
+                        },
+                        "credit_id": {
+                            "type": "string",
+                            "mapping": "CreditId"
+                        },
+                        "name": {
+                            "type": "string",
+                            "mapping": "Name"
+                        },
+                        "original_name": {
+                            "type": "string",
+                            "mapping": "OriginalName"
+                        },
+                        "gender": {
+                            "type": "integer",
+                            "mapping": "Gender"
+                        },
+                        "profile_path": {
+                            "type": "string",
+                            "mapping": "ProfilePath"
+                        }
+                    }
+                }
+            }
+        },
+        "episode_run_time": {
+            "type": "array",
+            "mapping": "EpisodeRunTime",
+            "items": {
+                "type": "integer[]"
+            }
+        },
+        "first_air_date": {
+            "type": "string",
+            "mapping": "FirstAirDate"
+        },
+        "genres": {
+            "type": "array",
+            "mapping": "Genres:java.util.List",
+            "items": {
+                "GenreRef": {
+                    "type": "object",
+                    "mapping": "net.forestany.mediacollection.search.data.Genre",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "mapping": "Id"
+                        },
+                        "name": {
+                            "type": "string",
+                            "mapping": "Name"
+                        }
+                    }
+                }
+            }
+        },
+        "homepage": {
+            "type": "string",
+            "mapping": "Homepage"
+        },
+        "id": {
+            "type": "integer",
+            "mapping": "Id"
+        },
+        "in_production": {
+            "type": "boolean",
+            "mapping": "InProduction"
+        },
+        "languages": {
+            "type": "array",
+            "mapping": "Languages",
+            "items": {
+                "type": "string[]"
+            }
+        },
+        "last_air_date": {
+            "type": "string",
+            "mapping": "LastAirDate"
+        },
+        "last_episode_to_air": {
+            "type": "object",
+            "mapping": "LastEpisodeToAir:net.forestany.mediacollection.search.data.LastEpisodeToAir",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "mapping": "Id"
+                },
+                "name": {
+                    "type": "string",
+                    "mapping": "Name"
+                },
+                "overview": {
+                    "type": "string",
+                    "mapping": "Overview"
+                },
+                "vote_average": {
+                    "type": "number",
+                    "mapping": "VoteAverage"
+                },
+                "vote_count": {
+                    "type": "integer",
+                    "mapping": "VoteCount"
+                },
+                "air_date": {
+                    "type": "string",
+                    "mapping": "AirDate"
+                },
+                "episode_number": {
+                    "type": "integer",
+                    "mapping": "EpisodeNumber"
+                },
+                "production_code": {
+                    "type": "string",
+                    "mapping": "ProductionCode"
+                },
+                "runtime": {
+                    "type": "integer",
+                    "mapping": "Runtime"
+                },
+                "season_number": {
+                    "type": "integer",
+                    "mapping": "SeasonNumber"
+                },
+                "show_id": {
+                    "type": "integer",
+                    "mapping": "ShowId"
+                },
+                "still_path": {
+                    "type": "string",
+                    "mapping": "StillPath"
+                }
+            }
+        },
+        "name": {
+            "type": "string",
+            "mapping": "Name"
+        },
+        "next_episode_to_air": {
+            "type": "string",
+            "mapping": "NextEpisodeToAir"
+        },
+        "networks": {
+            "type": "array",
+            "mapping": "Networks:java.util.List",
+            "items": {
+                "NetworkRef": {
+                    "type": "object",
+                    "mapping": "net.forestany.mediacollection.search.data.Network",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "mapping": "Id"
+                        },
+                        "logo_path": {
+                            "type": "string",
+                            "mapping": "LogoPath"
+                        },
+                        "name": {
+                            "type": "string",
+                            "mapping": "Name"
+                        },
+                        "origin_country": {
+                            "type": "string",
+                            "mapping": "OriginCountry"
+                        }
+                    }
+                }
+            }
+        },
+        "number_of_episodes": {
+            "type": "integer",
+            "mapping": "NumberOfEpisodes"
+        },
+        "number_of_seasons": {
+            "type": "integer",
+            "mapping": "NumberOfSeasons"
+        },
+        "origin_country": {
+            "type": "array",
+            "mapping": "OriginCountry",
+            "items": {
+                "type": "string[]"
+            }
+        },
+        "original_language": {
+            "type": "string",
+            "mapping": "OriginalLanguage"
+        },
+        "original_name": {
+            "type": "string",
+            "mapping": "OriginalName"
+        },
+        "overview": {
+            "type": "string",
+            "mapping": "Overview"
+        },
+        "popularity": {
+            "type": "number",
+            "mapping": "Popularity"
+        },
+        "poster_path": {
+            "type": "string",
+            "mapping": "PosterPath"
+        },
+        "production_companies": {
+            "type": "array",
+            "mapping": "ProductionCompanies:java.util.List",
+            "items": {
+                "ProductionCompanyRef": {
+                    "type": "object",
+                    "mapping": "net.forestany.mediacollection.search.data.ProductionCompany",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "mapping": "Id"
+                        },
+                        "logo_path": {
+                            "type": "string",
+                            "mapping": "LogoPath"
+                        },
+                        "name": {
+                            "type": "string",
+                            "mapping": "Name"
+                        },
+                        "origin_country": {
+                            "type": "string",
+                            "mapping": "OriginCountry"
+                        }
+                    }
+                }
+            }
+        },
+        "production_countries": {
+            "type": "array",
+            "mapping": "ProductionCountries:java.util.List",
+            "items": {
+                "ProductionCountryRef": {
+                    "type": "object",
+                    "mapping": "net.forestany.mediacollection.search.data.ProductionCountry",
+                    "properties": {
+                        "iso_3166_1": {
+                            "type": "string",
+                            "mapping": "ISO31661"
+                        },
+                        "name": {
+                            "type": "string",
+                            "mapping": "Name"
+                        }
+                    }
+                }
+            }
+        },
+        "seasons": {
+            "type": "array",
+            "mapping": "Seasons:java.util.List",
+            "items": {
+                "SeasonRef": {
+                    "type": "object",
+                    "mapping": "net.forestany.mediacollection.search.data.Season",
+                    "properties": {
+                        "air_date": {
+                            "type": "string",
+                            "mapping": "AirDate"
+                        },
+                        "episode_count": {
+                            "type": "integer",
+                            "mapping": "EpisodeCount"
+                        },
+                        "id": {
+                            "type": "integer",
+                            "mapping": "Id"
+                        },
+                        "name": {
+                            "type": "string",
+                            "mapping": "Name"
+                        },
+                        "overview": {
+                            "type": "string",
+                            "mapping": "Overview"
+                        },
+                        "poster_path": {
+                            "type": "string",
+                            "mapping": "PosterPath"
+                        },
+                        "season_number": {
+                            "type": "integer",
+                            "mapping": "SeasonNumber"
+                        },
+                        "vote_average": {
+                            "type": "number",
+                            "mapping": "VoteAverage"
+                        }
+                    }
+                }
+            }
+        },
+        "spoken_languages": {
+            "type": "array",
+            "mapping": "SpokenLanguages:java.util.List",
+            "items": {
+                "SpokenLanguageRef": {
+                    "type": "object",
+                    "mapping": "net.forestany.mediacollection.search.data.SpokenLanguage",
+                    "properties": {
+                        "english_name": {
+                            "type": "string",
+                            "mapping": "EnglishName"
+                        },
+                        "iso_639_1": {
+                            "type": "string",
+                            "mapping": "ISO6391"
+                        },
+                        "name": {
+                            "type": "string",
+                            "mapping": "Name"
+                        }
+                    }
+                }
+            }
+        },
+        "status": {
+            "type": "string",
+            "mapping": "Status"
+        },
+        "tagline": {
+            "type": "string",
+            "mapping": "Tagline"
+        },
+        "seriestype": {
+            "type": "string",
+            "mapping": "Type"
+        },
+        "vote_average": {
+            "type": "number",
+            "mapping": "VoteAverage"
+        },
+        "vote_count": {
+            "type": "integer",
+            "mapping": "VoteCount"
+        },
+        "credits": {
+            "type": "object",
+            "mapping": "Credits:net.forestany.mediacollection.search.data.Credits",
+            "properties": {
+                "cast": {
+                    "type": "array",
+                    "mapping": "Cast:java.util.List",
+                    "items": {
+                        "CastRef": {
+                            "type": "object",
+                            "mapping": "net.forestany.mediacollection.search.data.Cast",
+                            "properties": {
+                                "adult": {
+                                    "type": "boolean",
+                                    "mapping": "Adult"
+                                },
+                                "gender": {
+                                    "type": "integer",
+                                    "mapping": "Gender"
+                                },
+                                "id": {
+                                    "type": "integer",
+                                    "mapping": "Id"
+                                },
+                                "known_for_department": {
+                                    "type": "string",
+                                    "mapping": "KnownForDepartment"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "mapping": "Name"
+                                },
+                                "original_name": {
+                                    "type": "string",
+                                    "mapping": "OriginalName"
+                                },
+                                "popularity": {
+                                    "type": "number",
+                                    "mapping": "Popularity"
+                                },
+                                "profile_path": {
+                                    "type": "string",
+                                    "mapping": "ProfilePath"
+                                },
+                                "character": {
+                                    "type": "string",
+                                    "mapping": "Character"
+                                },
+                                "credit_id": {
+                                    "type": "string",
+                                    "mapping": "CreditId"
+                                },
+                                "order": {
+                                    "type": "integer",
+                                    "mapping": "Order"
+                                }
+                            }
+                        }
+                    }
+                },
+                "crew": {
+                    "type": "array",
+                    "mapping": "Crew:java.util.List",
+                    "items": {
+                        "CrewRef": {
+                            "type": "object",
+                            "mapping": "net.forestany.mediacollection.search.data.Crew",
+                            "properties": {
+                                "adult": {
+                                    "type": "boolean",
+                                    "mapping": "Adult"
+                                },
+                                "gender": {
+                                    "type": "integer",
+                                    "mapping": "Gender"
+                                },
+                                "id": {
+                                    "type": "integer",
+                                    "mapping": "Id"
+                                },
+                                "known_for_department": {
+                                    "type": "string",
+                                    "mapping": "KnownForDepartment"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "mapping": "Name"
+                                },
+                                "original_name": {
+                                    "type": "string",
+                                    "mapping": "OriginalName"
+                                },
+                                "popularity": {
+                                    "type": "number",
+                                    "mapping": "Popularity"
+                                },
+                                "profile_path": {
+                                    "type": "string",
+                                    "mapping": "ProfilePath"
+                                },
+                                "credit_id": {
+                                    "type": "string",
+                                    "mapping": "CreditId"
+                                },
+                                "department": {
+                                    "type": "string",
+                                    "mapping": "Department"
+                                },
+                                "job": {
+                                    "type": "string",
+                                    "mapping": "Job"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "required": [
+        "id",
+        "original_name",
+        "name"
+    ]
+}

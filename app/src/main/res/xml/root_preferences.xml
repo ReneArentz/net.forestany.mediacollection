@@ -1,0 +1,163 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/settings_category_general">
+
+        <ListPreference
+            app:defaultValue="en"
+            app:entries="@array/locale_entries"
+            app:entryValues="@array/locale_values"
+            app:key="general_locale"
+            app:title="@string/settings_general_locale"
+            app:useSimpleSummaryProvider="true" />
+
+        <SwitchPreferenceCompat
+            app:key="show_media_title"
+            app:title="@string/settings_general_show_media_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="backup_folder"
+            app:title="@string/settings_general_backup_folder"
+            app:useSimpleSummaryProvider="true" />
+
+        <SwitchPreferenceCompat
+            app:key="swipe_refresh_dialog"
+            app:title="@string/settings_general_swipe_refresh_dialog"
+            app:useSimpleSummaryProvider="true" />
+
+        <Preference
+            app:key="toolbar_offset"
+            app:title="@string/settings_general_toolbar_offset"
+            app:summary="@string/settings_general_toolbar_offset_summary"
+            app:useSimpleSummaryProvider="false" />
+
+        <Preference
+            app:key="toolbar_wait_autosearch"
+            app:title="@string/settings_general_toolbar_wait_autosearch"
+            app:summary="@string/settings_general_toolbar_wait_autosearch_summary"
+            app:useSimpleSummaryProvider="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_category_poster">
+
+        <ListPreference
+            app:defaultValue="342"
+            app:entries="@array/poster_width_entries"
+            app:entryValues="@array/poster_width_values"
+            app:key="poster_desired_width"
+            app:title="@string/settings_poster_desired_width"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="poster_overview_fixed_height"
+            app:title="@string/settings_poster_overview_fixed_height"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="poster_tmdb_url"
+            app:title="@string/settings_poster_tmdb_url"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="poster_movieposterdb_url"
+            app:title="@string/settings_poster_movieposterdb_url"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_category_search">
+
+        <EditTextPreference
+            app:key="search_tmdb_url_movies"
+            app:title="@string/settings_search_tmdb_url_movies"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="search_tmdb_url_movie_details"
+            app:title="@string/settings_search_tmdb_url_movie_details"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="search_tmdb_url_series"
+            app:title="@string/settings_search_tmdb_url_series"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="search_tmdb_url_series_details"
+            app:title="@string/settings_search_tmdb_url_series_details"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="en-US"
+            app:entries="@array/locale_iso_entries"
+            app:entryValues="@array/locale_iso_values"
+            app:key="search_tmdb_url_target_language"
+            app:title="@string/settings_search_tmdb_target_language"
+            app:useSimpleSummaryProvider="true" />
+
+        <Preference
+            app:key="search_tmdb_api_key"
+            app:title="@string/settings_search_tmdb_api_key"
+            app:useSimpleSummaryProvider="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_category_sync">
+
+        <ListPreference
+            app:defaultValue="0"
+            app:entries="@array/automatic_sync_entries"
+            app:entryValues="@array/automatic_sync_values"
+            app:key="sync_automatic"
+            app:title="@string/settings_sync_automatic"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="sync_server_ip"
+            app:title="@string/settings_sync_server_host"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="sync_server_port"
+            app:title="@string/settings_sync_server_port"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="sync_receive_buffer_size"
+            app:title="@string/settings_sync_receive_buffer_size"
+            app:useSimpleSummaryProvider="true" />
+
+        <Preference
+            app:key="sync_common_passphrase"
+            app:title="@string/settings_sync_common_passphrase"
+            app:useSimpleSummaryProvider="false" />
+
+        <EditTextPreference
+            app:key="sync_auth_user"
+            app:title="@string/settings_sync_auth_user"
+            app:useSimpleSummaryProvider="true" />
+
+        <Preference
+            app:key="sync_auth_passphrase"
+            app:title="@string/settings_sync_auth_passphrase"
+            app:useSimpleSummaryProvider="false" />
+
+        <EditTextPreference
+            app:key="sync_truststore_filename"
+            app:title="@string/settings_sync_truststore_filename"
+            app:useSimpleSummaryProvider="true" />
+
+        <Preference
+            app:key="sync_truststore_password"
+            app:title="@string/settings_sync_truststore_password"
+            app:useSimpleSummaryProvider="false" />
+
+        <EditTextPreference
+            app:key="sync_receive_max_unknown_amount_in_mib"
+            app:title="@string/settings_sync_receive_max_unknown_amount_in_mib"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

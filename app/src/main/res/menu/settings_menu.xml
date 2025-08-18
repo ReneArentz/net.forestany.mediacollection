@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/mI_overwrite_truststore"
+        android:icon="@drawable/ic_sync_lock"
+        android:title="@string/settings_menu_overwrite_truststore"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/mI_delete_truststore"
+        android:icon="@drawable/ic_lock_reset"
+        android:title="@string/settings_menu_delete_truststore"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/mI_reset"
+        android:icon="@drawable/ic_restore"
+        android:title="@string/settings_menu_reset"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/mI_factory_reset"
+        android:icon="@drawable/ic_danger"
+        android:title="@string/settings_menu_factory_reset"
+        app:showAsAction="never" />
+</menu>

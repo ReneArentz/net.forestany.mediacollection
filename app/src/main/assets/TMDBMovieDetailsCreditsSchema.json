@@ -1,0 +1,337 @@
+{
+    "$id": "https://example.com/define.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "TMDB Movie Details JSON Schema",
+    "type": "object",
+    "mapping": "net.forestany.mediacollection.search.data.MovieDetails",
+    "properties": {
+        "adult": {
+            "type": "boolean",
+            "mapping": "Adult"
+        },
+        "backdrop_path": {
+            "type": "string",
+            "mapping": "BackdropPath"
+        },
+        "belongs_to_collection": {
+            "type": "object",
+            "mapping": "BelongsToCollection:net.forestany.mediacollection.search.data.BelongsToCollection",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "mapping": "Id"
+                },
+                "name": {
+                    "type": "string",
+                    "mapping": "Name"
+                },
+                "poster_path": {
+                    "type": "string",
+                    "mapping": "PosterPath"
+                },
+                "backdrop_path": {
+                    "type": "string",
+                    "mapping": "BackdropPath"
+                }
+            }
+        },
+        "budget": {
+            "type": "integer",
+            "mapping": "Budget"
+        },
+        "genres": {
+            "type": "array",
+            "mapping": "Genres:java.util.List",
+            "items": {
+                "GenreRef": {
+                    "type": "object",
+                    "mapping": "net.forestany.mediacollection.search.data.Genre",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "mapping": "Id"
+                        },
+                        "name": {
+                            "type": "string",
+                            "mapping": "Name"
+                        }
+                    }
+                }
+            }
+        },
+        "homepage": {
+            "type": "string",
+            "mapping": "Homepage"
+        },
+        "id": {
+            "type": "integer",
+            "mapping": "Id"
+        },
+        "imdb_id": {
+            "type": "string",
+            "mapping": "IMDBId"
+        },
+        "origin_country": {
+            "type": "array",
+            "mapping": "OriginCountry",
+            "items": {
+                "type": "string[]"
+            }
+        },
+        "original_language": {
+            "type": "string",
+            "mapping": "OriginalLanguage"
+        },
+        "original_title": {
+            "type": "string",
+            "mapping": "OriginalTitle"
+        },
+        "overview": {
+            "type": "string",
+            "mapping": "Overview"
+        },
+        "popularity": {
+            "type": "number",
+            "mapping": "Popularity"
+        },
+        "poster_path": {
+            "type": "string",
+            "mapping": "PosterPath"
+        },
+        "production_companies": {
+            "type": "array",
+            "mapping": "ProductionCompanies:java.util.List",
+            "items": {
+                "ProductionCompanyRef": {
+                    "type": "object",
+                    "mapping": "net.forestany.mediacollection.search.data.ProductionCompany",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "mapping": "Id"
+                        },
+                        "logo_path": {
+                            "type": "string",
+                            "mapping": "LogoPath"
+                        },
+                        "name": {
+                            "type": "string",
+                            "mapping": "Name"
+                        },
+                        "origin_country": {
+                            "type": "string",
+                            "mapping": "OriginCountry"
+                        }
+                    }
+                }
+            }
+        },
+        "production_countries": {
+            "type": "array",
+            "mapping": "ProductionCountries:java.util.List",
+            "items": {
+                "ProductionCountryRef": {
+                    "type": "object",
+                    "mapping": "net.forestany.mediacollection.search.data.ProductionCountry",
+                    "properties": {
+                        "iso_3166_1": {
+                            "type": "string",
+                            "mapping": "ISO31661"
+                        },
+                        "name": {
+                            "type": "string",
+                            "mapping": "Name"
+                        }
+                    }
+                }
+            }
+        },
+        "release_date": {
+            "type": "string",
+            "mapping": "ReleaseDate"
+        },
+        "revenue": {
+            "type": "integer",
+            "mapping": "Revenue"
+        },
+        "runtime": {
+            "type": "integer",
+            "mapping": "Runtime"
+        },
+        "spoken_languages": {
+            "type": "array",
+            "mapping": "SpokenLanguages:java.util.List",
+            "items": {
+                "SpokenLanguageRef": {
+                    "type": "object",
+                    "mapping": "net.forestany.mediacollection.search.data.SpokenLanguage",
+                    "properties": {
+                        "english_name": {
+                            "type": "string",
+                            "mapping": "EnglishName"
+                        },
+                        "iso_639_1": {
+                            "type": "string",
+                            "mapping": "ISO6391"
+                        },
+                        "name": {
+                            "type": "string",
+                            "mapping": "Name"
+                        }
+                    }
+                }
+            }
+        },
+        "status": {
+            "type": "string",
+            "mapping": "Status"
+        },
+        "tagline": {
+            "type": "string",
+            "mapping": "Tagline"
+        },
+        "title": {
+            "type": "string",
+            "mapping": "Title"
+        },
+        "video": {
+            "type": "boolean",
+            "mapping": "Video"
+        },
+        "vote_average": {
+            "type": "number",
+            "mapping": "VoteAverage"
+        },
+        "vote_count": {
+            "type": "integer",
+            "mapping": "VoteCount"
+        },
+        "credits": {
+            "type": "object",
+            "mapping": "Credits:net.forestany.mediacollection.search.data.Credits",
+            "properties": {
+                "cast": {
+                    "type": "array",
+                    "mapping": "Cast:java.util.List",
+                    "items": {
+                        "CastRef": {
+                            "type": "object",
+                            "mapping": "net.forestany.mediacollection.search.data.Cast",
+                            "properties": {
+                                "adult": {
+                                    "type": "boolean",
+                                    "mapping": "Adult"
+                                },
+                                "gender": {
+                                    "type": "integer",
+                                    "mapping": "Gender"
+                                },
+                                "id": {
+                                    "type": "integer",
+                                    "mapping": "Id"
+                                },
+                                "known_for_department": {
+                                    "type": "string",
+                                    "mapping": "KnownForDepartment"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "mapping": "Name"
+                                },
+                                "original_name": {
+                                    "type": "string",
+                                    "mapping": "OriginalName"
+                                },
+                                "popularity": {
+                                    "type": "number",
+                                    "mapping": "Popularity"
+                                },
+                                "profile_path": {
+                                    "type": "string",
+                                    "mapping": "ProfilePath"
+                                },
+                                "cast_id": {
+                                    "type": "integer",
+                                    "mapping": "CastId"
+                                },
+                                "character": {
+                                    "type": "string",
+                                    "mapping": "Character"
+                                },
+                                "credit_id": {
+                                    "type": "string",
+                                    "mapping": "CreditId"
+                                },
+                                "order": {
+                                    "type": "integer",
+                                    "mapping": "Order"
+                                }
+                            }
+                        }
+                    }
+                },
+                "crew": {
+                    "type": "array",
+                    "mapping": "Crew:java.util.List",
+                    "items": {
+                        "CrewRef": {
+                            "type": "object",
+                            "mapping": "net.forestany.mediacollection.search.data.Crew",
+                            "properties": {
+                                "adult": {
+                                    "type": "boolean",
+                                    "mapping": "Adult"
+                                },
+                                "gender": {
+                                    "type": "integer",
+                                    "mapping": "Gender"
+                                },
+                                "id": {
+                                    "type": "integer",
+                                    "mapping": "Id"
+                                },
+                                "known_for_department": {
+                                    "type": "string",
+                                    "mapping": "KnownForDepartment"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "mapping": "Name"
+                                },
+                                "original_name": {
+                                    "type": "string",
+                                    "mapping": "OriginalName"
+                                },
+                                "popularity": {
+                                    "type": "number",
+                                    "mapping": "Popularity"
+                                },
+                                "profile_path": {
+                                    "type": "string",
+                                    "mapping": "ProfilePath"
+                                },
+                                "credit_id": {
+                                    "type": "string",
+                                    "mapping": "CreditId"
+                                },
+                                "department": {
+                                    "type": "string",
+                                    "mapping": "Department"
+                                },
+                                "job": {
+                                    "type": "string",
+                                    "mapping": "Job"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "required": [
+        "id",
+        "original_title",
+        "title"
+    ]
+}

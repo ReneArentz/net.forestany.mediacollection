@@ -1,0 +1,102 @@
+{
+	"$id": "https://example.com/define.schema.json",
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"description": "TMDB Movie Search Results JSON Schema",
+	"type": "object",
+	"mapping": "net.forestany.mediacollection.search.data.MovieSearchResults",
+	"properties": {
+		"page": {
+			"type": "integer",
+			"mapping": "Page"
+		},
+		"results": {
+			"type": "array",
+			"mapping": "Results:java.util.List",
+			"items": {
+				"SearchResultRef": {
+					"type": "object",
+					"mapping": "net.forestany.mediacollection.search.data.MovieSearchResult",
+					"properties": {
+						"adult": {
+							"type": "boolean",
+							"mapping": "Adult"
+						},
+						"backdrop_path": {
+							"type": "string",
+							"mapping": "BackdropPath"
+						},
+						"genre_ids": {
+							"type": "array",
+							"mapping": "GenreIds",
+							"items": {
+								"type": "integer[]"
+							}
+						},
+						"id": {
+							"type": "integer",
+							"mapping": "Id"
+						},
+						"original_language": {
+							"type": "string",
+							"mapping": "OriginalLanguage"
+						},
+						"original_title": {
+							"type": "string",
+							"mapping": "OriginalTitle"
+						},
+						"overview": {
+							"type": "string",
+							"mapping": "Overview"
+						},
+						"popularity": {
+							"type": "number",
+							"mapping": "Popularity"
+						},
+						"poster_path": {
+							"type": "string",
+							"mapping": "PosterPath"
+						},
+						"release_date": {
+							"type": "string",
+							"mapping": "ReleaseDate"
+						},
+						"title": {
+							"type": "string",
+							"mapping": "Title"
+						},
+						"video": {
+							"type": "boolean",
+							"mapping": "Video"
+						},
+						"vote_average": {
+							"type": "number",
+							"mapping": "VoteAverage"
+						},
+						"vote_count": {
+							"type": "integer",
+							"mapping": "VoteCount"
+						}
+					},
+					"required": [
+						"id",
+						"original_title",
+						"title"
+					]
+				}
+			},
+			"minItems": 0
+		},
+		"total_pages": {
+			"type": "integer",
+			"mapping": "TotalPages"
+		},
+		"total_results": {
+			"type": "integer",
+			"mapping": "TotalResults"
+		}
+	},
+	"required": [
+		"results",
+		"total_results"
+	]
+}

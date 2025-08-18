@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/itemview_general_title">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/eT_Title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_checkbox_radio">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/itemview_general_type"
+                android:textColor="?attr/colorOnSurface"
+                android:paddingBottom="8dp" />
+
+            <RadioGroup
+                android:id="@+id/radio_SubType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                    android:id="@+id/radio_movie"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/itemview_movie"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                    android:id="@+id/radio_series"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/itemview_series"
+                    android:textColor="?attr/colorOnSurface" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/itemview_general_filed_under">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/eT_FiledUnder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/itemview_general_publication_year">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/eT_PublicationYear"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:focusable="false"
+                android:clickable="true" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/itemview_general_original_title">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/eT_OriginalTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_checkbox_radio">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/itemview_general_medium"
+                android:textColor="?attr/colorOnSurface"
+                android:paddingBottom="8dp" />
+
+            <CheckBox
+                android:id="@+id/checkbox_bluray"
+                android:text="@string/itemview_general_medium_bluray"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <CheckBox
+                android:id="@+id/checkbox_dvd"
+                android:text="@string/itemview_general_medium_dvd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <CheckBox
+                android:id="@+id/checkbox_4k"
+                android:text="@string/itemview_general_medium_4k"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

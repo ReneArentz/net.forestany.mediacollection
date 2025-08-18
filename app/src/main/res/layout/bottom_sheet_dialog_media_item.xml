@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/mediaItemTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="?attr/colorOnSurface"
+            android:maxLines="3"
+            android:ellipsize="end"
+            android:lineSpacingExtra="4dp"
+            android:text="@string/itemview_bsd_name" />
+
+        <TextView
+            android:id="@+id/mediaItemDetails"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="?attr/colorOnBackground"
+            android:text="@string/itemview_bsd_details" />
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/mediaItemImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="92dp"
+        android:height="184dp"
+        android:maxWidth="92dp"
+        android:maxHeight="184dp"
+        android:adjustViewBounds="true"
+        android:layout_marginStart="12dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_launcher_background"
+        android:contentDescription="@string/itemview_bsd_image"/>
+
+</LinearLayout>

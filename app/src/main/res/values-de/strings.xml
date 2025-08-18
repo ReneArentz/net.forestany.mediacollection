@@ -1,0 +1,271 @@
+<!--
+// string constants from xml: getString(R.string.name_of_definition)
+// in xml: android:text="@string/name_of_definition"
+-->
+<resources>
+    <string name="app_name">Media Collection</string>
+
+    <string name="title_main_activity">Media Collection</string>
+    <string name="title_settings_activity">Einstellungen</string>
+    <string name="title_item_activity">Element</string>
+
+    <string name="text_yes">Ja</string>
+    <string name="text_no">Nein</string>
+    <string name="text_ok">OK</string>
+    <string name="text_cancel">Abbrechen</string>
+    <string name="text_back">Zurück</string>
+
+    <!-- MainActivity -->
+    <string name="main_menu_search">Suche</string>
+    <string name="main_menu_filter">Filter</string>
+    <string name="main_menu_sort">Sortierung</string>
+    <string name="main_menu_synchronize">Synchronisieren</string>
+    <string name="main_menu_export">Export</string>
+    <string name="main_menu_import">Import</string>
+    <string name="main_menu_settings">Einstellungen</string>
+    <string name="main_menu_statistic">Statistik</string>
+
+    <string name="main_menu_search_hint">Suche…</string>
+
+    <string name="main_menu_search_content_description">Suche nach Elementen</string>
+    <string name="main_menu_search_back_content_description">Suche schließen</string>
+    <string name="main_floating_button_content_description">Element hinzufügen</string>
+    <string name="main_progressbar_text">0 %</string>
+
+    <string name="main_sort">Reihenfolge…</string>
+    <string name="main_sort_ascending">Aufsteigend</string>
+    <string name="main_sort_descending">Absteigend</string>
+
+    <string name="main_no_db">Die SQLite Datenbank ist nicht vefügbar.</string>
+    <string name="main_no_filter_columns">Die Filterspalten sind nicht initialisiert.</string>
+    <string name="main_no_sort_columns">Die Sortierungsspalten sind nicht initialisiert.</string>
+
+    <string name="main_field_title">Titel</string>
+    <string name="main_field_originaltitle">Originaltitel</string>
+    <string name="main_field_publicationyear">Erscheinungsjahr</string>
+    <string name="main_field_type">Typ</string>
+    <string name="main_field_subtype">Medium</string>
+    <string name="main_field_filedunder">Abgelegt unter</string>
+    <string name="main_field_lastseen">Zuletzt gesehen</string>
+    <string name="main_field_lengthinminutes">Länge in Minuten</string>
+    <string name="main_field_languages">Sprachen</string>
+    <string name="main_field_subtitles">Untertitel</string>
+    <string name="main_field_directors">Regie</string>
+    <string name="main_field_screenwriters">Drehbuch</string>
+    <string name="main_field_cast">Besetzung</string>
+    <string name="main_field_specialfeatures">Special Features</string>
+    <string name="main_field_other">Sonstiges</string>
+
+    <string name="main_filter_overview">Filter Übersicht</string>
+    <string name="main_filter_value_field">Wert…</string>
+    <string name="main_filter_add_button">Hinzufügen</string>
+    <string name="main_filter_delete_button">Löschen</string>
+    <string name="main_filter_column_name">Filterspalte</string>
+    <string name="main_filter_value">Filter-Wert</string>
+
+    <string name="main_sort_overview">Sortierung Übersicht</string>
+    <string name="main_sort_add_button">Hinzufügen</string>
+    <string name="main_sort_delete_button">Löschen</string>
+    <string name="main_sort_column_name">Sortierungsspalte</string>
+    <string name="main_sort_direction">Reihenfolge</string>
+
+    <string name="main_item_poster_content_description">Media Poster</string>
+    <string name="main_item_title_content_description">Media Titel</string>
+
+    <string name="main_return_record_inserted">Datensatz hinzugefügt.</string>
+    <string name="main_return_record_updated">Datensatz aktualisiert.</string>
+    <string name="main_return_record_deleted">Datensatz gelöscht.</string>
+
+    <string name="main_exception_open_output_stream">Output stream konnte nicht geöffnet werden.</string>
+    <string name="main_exception_contentresolver_insert">Die Datei konnte nicht aufgelöst oder erstellt werden.</string>
+
+    <string name="main_choose_filter">Bitte wählen Sie eine Spalte und einen Filterwert aus.</string>
+    <string name="main_filter_chosen">Filter \'%1$s\' für Spalte \'%2$s\' hinzugefügt.</string>
+    <string name="main_filter_removed">Filter \'%1$s\' gelöscht.</string>
+    <string name="main_choose_sort">Bitte wählen Sie eine Spalte und eine Sortierreihenfolge aus.</string>
+    <string name="main_sort_chosen">Sortierung für Spalte \'%1$s\' mit Reihenfolge \'%2$s\' hinzugefügt.</string>
+    <string name="main_sort_removed">Sortierung für Spalte \'%1$s\' gelöscht.</string>
+
+    <string name="main_confirm_action">Aktion bestätigen</string>
+    <string name="main_reset_filter_sort_question">Möchten Sie die Filter und Sortierkriterien zurücksetzen?</string>
+
+    <string name="main_no_records_found">Keine Datensätze gefunden.</string>
+
+    <string name="main_data_exported">Daten exportiert nach \'%1$s\'.</string>
+
+    <string name="main_find_json_failure">Eine Datei mit endung .json.txt kann nicht gefunden werden.</string>
+    <string name="main_find_dat_failure">Eine Datei mit endung .dat.txt kann nicht gefunden werden.</string>
+    <string name="main_select_json_and_dat">Bitte wählen Sie sowohl eine .json.txt- als auch eine .dat.txt-Datei aus.</string>
+
+    <string name="main_import_question">Sind Sie sicher, dass Sie alle Daten in der Datenbank zurücksetzen und die Dateisicherung importieren möchten?</string>
+    <string name="main_import_not_truncate_mediacollection">Die Tabelle \'mediacollection\' konnte nicht geleert werden.</string>
+    <string name="main_import_not_truncate_languages">Die Tabelle  \'language\' konnte nicht geleert werden.</string>
+    <string name="main_import_finished">Datenbank Import abgeschlossen.</string>
+
+    <string name="main_sync_auth_passphrase_missing">Die Passphrase für die Synchronisierungsauthentifizierung fehlt.</string>
+    <string name="main_sync_exception_post_all">Die Übertragung aller Daten konnte nicht abgeschlossen werden. Die Synchronisierung wurde abgebrochen. %1$d | %2$s</string>
+    <string name="main_sync_exception_update_deleted">Das Festlegen des gelöschten Zeitstempels ist fehlgeschlagen für \'%1$s\'.</string>
+    <string name="main_sync_exception_fetch_all">Das Abrufen aller Daten konnte nicht abgeschlossen werden. Die Synchronisierung wurde abgebrochen. %1$d | %2$s</string>
+    <string name="main_sync_finished">Synchronisierung abgeschlossen.</string>
+
+    <string name="main_app_unknown_version">Die aktuelle App-Version kann nicht abgerufen werden.</string>
+
+    <!-- ItemViewActivity -->
+    <string name="itemview_menu_autofill">Automatisches Ausfüllen</string>
+    <string name="itemview_menu_delete">Löschen</string>
+    <string name="itemview_menu_save">Speichern</string>
+
+    <string name="itemview_record_not_loaded">Der Datensatz konnte nicht geladen werden.</string>
+    <string name="itemview_tab_title_general">Allgemein</string>
+    <string name="itemview_tab_title_details">Details</string>
+    <string name="itemview_tab_title_poster">Poster</string>
+    <string name="itemview_tab_title_other">Sonstiges</string>
+
+    <string name="itemview_enter_title">Bitte geben Sie einen Titel ein.</string>
+    <string name="itemview_enter_type">Bitte wählen Sie einen Typ aus.</string>
+    <string name="itemview_enter_originaltitle">Bitte geben Sie einen Originaltitel ein.</string>
+    <string name="itemview_enter_medium">Bitte wählen Sie ein Medium aus.</string>
+    <string name="itemview_enter_filedunder">Bitte geben Sie einen Wert bei \'Abgelegt unter\' an.</string>
+    <string name="itemview_enter_publication_year">Bitte geben Sie ein Erscheinungsjahr ein.</string>
+    <string name="itemview_enter_new_record_already_in_db">Datensatz existiert bereits.</string>
+    <string name="itemview_movie_url_null">Die URL zum Abrufen der Film-Ergebnisse ist null.</string>
+    <string name="itemview_movie_details_url_null">Die URL zum Abrufen der Film-Details ist null.</string>
+    <string name="itemview_series_url_null">Die URL zum Abrufen der Serien-Ergebnisse ist null.</string>
+    <string name="itemview_series_details_url_null">Die URL zum Abrufen der Serien-Details ist null.</string>
+    <string name="itemview_no_results_title">Keine Ergebnisse mit Titel \'%1$s\' gefunden.</string>
+    <string name="itemview_no_results_movie_id">Keine Filmdetails mit der Id \'%1$d\' gefunden.</string>
+    <string name="itemview_no_results_series_id">Keine Seriendetails mit der Id \'%1$d\' gefunden.</string>
+    <string name="itemview_no_date">Kein Datum</string>
+    <string name="itemview_auto_fill_subtitles">Untertitel auswählen</string>
+    <string name="itemview_auto_fill_done">Automatisches Ausfüllen abgeschlossen.</string>
+
+    <string name="itemview_unique_violation">Fehler: Datensatz mit Originaltitel und Erscheinungsjahr bereits vorhanden.</string>
+
+    <string name="itemview_delete">Löschen</string>
+    <string name="itemview_delete_question">Möchten Sie diesen Datensatz löschen?</string>
+    <string name="itemview_could_not_delete">Der Datensatz konnte nicht gelöscht werden.</string>
+
+    <string name="itemview_poster_updated">Poster aktualisiert.</string>
+    <string name="itemview_poster_no_temp">Kein temporärer Datensatz verfügbar.</string>
+    <string name="itemview_poster_invalid_url">Ungültige URL. Muss mit \'.jpg\', \'.jpeg\', \'.png\' oder \'.webp\' enden, aber endet mit: \'%1$s\'.</string>
+
+    <string name="itemview_movie">Film</string>
+    <string name="itemview_series">Serie</string>
+    <string name="itemview_detailsfragment_not_seen">Nicht gesehen</string>
+    <string name="itemview_generalfragment_select_year">Jahr auswählen</string>
+    <string name="itemview_otherfragment_not_modified">Nicht geändert</string>
+
+    <string name="itemview_general_title">Titel…</string>
+    <string name="itemview_general_type">Typ…</string>
+    <string name="itemview_general_publication_year">Erscheinungsjahr…</string>
+    <string name="itemview_general_original_title">Originaltitel…</string>
+    <string name="itemview_general_medium">Medium…</string>
+    <string name="itemview_general_medium_bluray">Bluray</string>
+    <string name="itemview_general_medium_dvd">DVD</string>
+    <string name="itemview_general_medium_4k">4K</string>
+    <string name="itemview_general_filed_under">Abgelegt unter…</string>
+
+    <string name="itemview_details_last_seen">Zuletzt gesehen…</string>
+    <string name="itemview_details_length_in_minutes">Länge in Minuten…</string>
+    <string name="itemview_details_languages">Sprachen…</string>
+    <string name="itemview_details_subtitles">Untertitel…</string>
+    <string name="itemview_details_directors">Regie…</string>
+    <string name="itemview_details_screenwriters">Drehbuch…</string>
+    <string name="itemview_details_cast">Besetzung…</string>
+
+    <string name="itemview_poster">Poster</string>
+    <string name="itemview_poster_edit">Bearbeiten</string>
+    <string name="itemview_description_poster">Poster</string>
+    <string name="itemview_description_edit_poster">Poster bearbeiten</string>
+
+    <string name="itemview_other_special_features">Special features…</string>
+    <string name="itemview_other_other">Sonstiges…</string>
+    <string name="itemview_other_last_modified">Zuletzt geändert</string>
+
+    <string name="itemview_bsd_title">Wählen Sie ein Element aus</string>
+    <string name="itemview_bsd_name">Name</string>
+    <string name="itemview_bsd_details">Originaltitel - Erscheinungsdatum</string>
+    <string name="itemview_bsd_details_content">%1$s - %2$s</string>
+    <string name="itemview_bsd_image">Poster Vorschau</string>
+
+    <!-- SettingsActivity -->
+    <string name="settings_menu_overwrite_truststore">Truststore(s) überschreiben</string>
+    <string name="settings_menu_delete_truststore">Truststore(s) löschen</string>
+    <string name="settings_menu_reset">Datenbank zurücksetzen</string>
+    <string name="settings_menu_factory_reset">Werkseinstellungen</string>
+
+    <string name="settings_truststore_p12_overwritten">Truststore Datei \'.p12\' überschrieben.</string>
+    <string name="settings_truststore_bks_overwritten">Truststore Datei \'.bks\' überschrieben.</string>
+    <string name="settings_truststore_not_found">Bitte wählen Sie eine .p12 oder eine .bks Datei aus.</string>
+
+    <string name="settings_delete_truststore">Truststore(s) löschen</string>
+    <string name="settings_delete_truststore_question">Sind Sie sicher, dass Sie den Truststore in den App-Dateien löschen möchten?</string>
+    <string name="settings_delete_truststore_p12_deleted">Truststore Datei \'.p12\' gelöscht.</string>
+    <string name="settings_delete_truststore_bks_deleted">Truststore Datei \'.bks\' gelöscht.</string>
+    <string name="settings_delete_truststore_none_deleted">Keine .p12 Truststore- oder .bks Truststore-Datei gefunden.</string>
+
+    <string name="settings_reset_data">Datenbank zurücksetzen</string>
+    <string name="settings_reset_data_question">Sind Sie sicher, dass Sie alle Daten in der Datenbank zurücksetzen möchten?</string>
+    <string name="settings_reset_data_no_db">Die SQLite-Datenbank ist nicht verfügbar..</string>
+    <string name="settings_reset_data_not_truncate_mediacollection">Die Tabelle \'mediacollection\' konnte nicht geleert werden.</string>
+    <string name="settings_reset_data_not_truncate_languages">Die Tabelle \'language\' konnte nicht geleert werden.</string>
+    <string name="settings_reset_data_finished">Datenbank-Zurücksetzung abgeschlossen.</string>
+
+    <string name="settings_factory_reset">Auf Werkseinstellungen zurücksetzen</string>
+    <string name="settings_factory_reset_question">Möchten Sie die App wirklich auf die Werkseinstellungen zurücksetzen? Alle Einstellungen und Daten gehen dabei verloren.</string>
+
+    <string name="settings_category_general">Allgemein</string>
+    <string name="settings_general_locale">Spracheinstellungen</string>
+    <string name="settings_general_show_media_title">Medientitel anzeigen</string>
+    <string name="settings_general_backup_folder">Backup-Ordner</string>
+    <string name="settings_general_swipe_refresh_dialog">Wisch-Refresh Dialog</string>
+    <string name="settings_general_toolbar_offset">Symbolleistenversatz</string>
+    <string name="settings_general_toolbar_offset_summary">Wählen Sie einen Wert zwischen 0 und 100</string>
+    <string name="settings_general_toolbar_wait_autosearch">Toolbar Autosuche Wartezeit(ms)</string>
+    <string name="settings_general_toolbar_wait_autosearch_summary">Wählen Sie einen Wert zwischen 0 und 5000</string>
+
+    <string name="settings_category_poster">Poster</string>
+    <string name="settings_poster_desired_width">Gewünschte Posterbreite</string>
+    <string name="settings_poster_overview_fixed_height">Feste Posterhöhe (px) bei Hauptübersicht</string>
+    <string name="settings_poster_tmdb_url">TMDB Poster URL</string>
+    <string name="settings_poster_movieposterdb_url">Movie Poster DB URL</string>
+
+    <string name="settings_category_search">Suche</string>
+    <string name="settings_search_tmdb_url_movies">TMDB URL Film-Ergebnisse</string>
+    <string name="settings_search_tmdb_url_movie_details">TMDB URL Film-Details</string>
+    <string name="settings_search_tmdb_url_series">TMDB URL Serien-Ergebnisse</string>
+    <string name="settings_search_tmdb_url_series_details">TMDB URL Serien-Details</string>
+    <string name="settings_search_tmdb_target_language">TMDB Suche Spracheinstellung</string>
+    <string name="settings_search_tmdb_api_key">TMDB API Schlüssel</string>
+
+    <string name="settings_category_sync">Synchronisierung</string>
+    <string name="settings_sync_automatic">Automatische Synchronisation</string>
+    <string name="settings_sync_server_host">Server Host/IP</string>
+    <string name="settings_sync_server_port">Server Port</string>
+    <string name="settings_sync_receive_buffer_size">Receive Buffer Size</string>
+    <string name="settings_sync_common_passphrase">Gemeinsames Kennwort</string>
+    <string name="settings_sync_auth_user">Authentifizierungsbenutzer</string>
+    <string name="settings_sync_auth_passphrase">Authentifizierungskennwort</string>
+    <string name="settings_sync_truststore_filename">Truststore Dateiname</string>
+    <string name="settings_sync_truststore_password">Truststore Kennwort</string>
+    <string name="settings_sync_receive_max_unknown_amount_in_mib">Empfange max. unbekannte Datenmenge(MiB)</string>
+
+    <string name="settings_password_dialog_fragment_key_missing">Der Präferenzschlüssel für das Passwortdialogfeld ist erforderlich.</string>
+    <string name="settings_password_dialog_fragment_title_missing">Der Titel für das Passwortdialogfeld ist erforderlich.</string>
+
+    <string name="settings_slider_dialog_fragment_key_missing">Der Präferenzschlüssel für den Schieberegler ist erforderlich.</string>
+    <string name="settings_slider_dialog_fragment_title_missing">Der Titel für den Schieberegler ist erforderlich.</string>
+
+    <string name="settings_language_changed">Sprache geändert. Die App wird neu gestartet in %1$d sek.</string>
+    <string name="settings_value_empty">Der Einstellwert darf nicht leer sein.</string>
+    <string name="settings_general_backup_folder_false_start">Der Backup-Ordner muss mit \'Documents/\' beginnen.</string>
+    <string name="settings_value_is_not_integer">Der Einstellwert ist keine ganze Zahl.</string>
+    <string name="settings_value_not_https">Der Einstellwert beginnt nicht mit \'https://\'.</string>
+    <string name="settings_value_missing_placeholder_one">Der Einstellwert beginnt nicht \'%1\'.</string>
+    <string name="settings_value_missing_placeholder_two">Der Einstellwert beginnt nicht \'%2\'.</string>
+    <string name="settings_value_missing_placeholder_three">Der Einstellwert beginnt nicht \'%3\'.</string>
+    <string name="settings_value_length_to_low">Die Länge des Einstellungswerts muss größer oder gleich \'%1$d\' sein.</string>
+    <string name="settings_value_length_to_high">Die Länge des Einstellungswerts muss kleiner oder gleich \'%1$d\' sein.</string>
+    <string name="settings_value_to_low">Der Einstellungswert muss größer oder gleich \'%1$d\' sein.</string>
+    <string name="settings_value_to_high">Der Einstellungswert muss kleiner oder gleich \'%1$d\' sein.</string>
+</resources>
