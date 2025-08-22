@@ -1380,7 +1380,7 @@ class MainActivity : AppCompatActivity() {
             // set sending socket instance for https client
             o_clientConfig.setSendingSocketInstanceForHttpClient(o_socketSend)
         } catch (e: Exception) {
-            errorSnackbar(message = "Error: ${e.message ?: "Exception in onExportClicked method."}", view = findViewById(android.R.id.content))
+            errorSnackbar(message = "Error: ${e.message ?: "Exception in onSyncClicked method."}", view = findViewById(android.R.id.content))
             return
         }
 
@@ -1701,7 +1701,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 runOnUiThread {
-                    errorSnackbar(message = "Error: ${e.message ?: "Exception in onExportClicked method."}", view = findViewById(android.R.id.content))
+                    errorSnackbar(message = "Error: ${e.message ?: "Exception in onSyncClicked method."}", view = findViewById(android.R.id.content))
                 }
             } finally {
                 runOnUiThread {

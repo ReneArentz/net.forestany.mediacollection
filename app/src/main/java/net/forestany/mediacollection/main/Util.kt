@@ -67,9 +67,9 @@ object Util {
             view,
             message,
             Color.WHITE,
-            "#2E7D32".toColorInt(),
+            "#0F5132".toColorInt(),
             Color.WHITE,
-            "#8FAE8F".toColorInt(),
+            "#1FA868".toColorInt(),
             anchorView,
             length
         )
@@ -85,14 +85,14 @@ object Util {
             view,
             message,
             Color.WHITE,
-            "#B00020".toColorInt(),
+            "#DC3545".toColorInt(),
             Color.WHITE,
-            "#CF6679".toColorInt(),
+            "#FF7992".toColorInt(),
             anchorView,
             length
         )
     }
-    // val result = net.forestany.mediacollection.main.Util.replacePlaceholders(template, "great", "Simon", "Chief")
+
     fun replacePlaceholders(input: String?, vararg args: String?): String? {
         if (input == null) return null
 
