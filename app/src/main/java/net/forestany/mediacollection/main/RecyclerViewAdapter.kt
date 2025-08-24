@@ -7,8 +7,8 @@ import net.forestany.mediacollection.R
 
 class RecyclerViewAdapter: RecyclerView.Adapter<ItemViewHolder>() {
     interface RecyclerViewAdapterDelegate {
-        fun onLoadMore()
         fun onClickItem(itemBean: ItemBean)
+        fun onLongClickItem(itemBean: ItemBean)
     }
 
     private var mutableList: MutableList<ItemBean> = mutableListOf()
@@ -30,14 +30,13 @@ class RecyclerViewAdapter: RecyclerView.Adapter<ItemViewHolder>() {
             override fun onItemViewClick(itemBean: ItemBean) {
                 delegate?.onClickItem(itemBean)
             }
+
+            override fun onItemViewLongClick(itemBean: ItemBean) {
+                delegate?.onLongClickItem(itemBean)
+            }
         }
 
         holder.updateView()
-
-        // scroll to last item reached
-        if ((mutableList.size > 8) && (holder.adapterPosition == mutableList.size - 1)) {
-            delegate?.onLoadMore()
-        }
     }
 
     fun clear() {
@@ -46,7 +45,7 @@ class RecyclerViewAdapter: RecyclerView.Adapter<ItemViewHolder>() {
         notifyItemRangeRemoved(0, size)
     }
 
-    fun reload(mutableList: MutableList<ItemBean>) {
+    fun refresh(mutableList: MutableList<ItemBean>) {
         this.clear()
         this.mutableList.addAll(mutableList)
         // better notifyItemRangeChanged() than notifyDataSetChanged()

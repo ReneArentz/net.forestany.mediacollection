@@ -1,5 +1,10 @@
 package net.forestany.mediacollection
 
+//TODO allow in search fields the characters '#' '@' '&' - look for 'a-zA-Z'
+//TODO special filter for "FiledUnder" - if just one character entered look for this as uppercase at the start of the value or or alone as uppercase with a whitespace after it in the value
+//TODO not so many sort and filter columns
+//TODO fast view to last seen
+
 // android studio: collapse all methods: ctrl + shift + * and then 1 on numpad
 // android studio: expand all with ctrl + shift + numpad + several times
 
@@ -73,6 +78,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var recyclerView: RecyclerView
     private lateinit var recyclerViewAdapter: RecyclerViewAdapter
+    private lateinit var layoutManager: GridLayoutManager
     private lateinit var floatingActionButton: FloatingActionButton
 
     private lateinit var searchIcon: ImageView
@@ -92,6 +98,9 @@ class MainActivity : AppCompatActivity() {
     private var sortBadgeTextView: TextView? = null
     private var skipFiltersSortsReset = false
     private var isLoading = false
+    private var isLastPage = false
+    private var currentPage = 1
+    private var pageSize = 10
     private var dbEmpty = true
 
     companion object {
@@ -135,25 +144,27 @@ class MainActivity : AppCompatActivity() {
             }
 
             RETURN_CODE_RELOAD -> {
-                reload()
+                refresh()
             }
 
             RETURN_CODE_INSERTED_AND_RELOAD -> {
                 notifySnackbar(message = getString(R.string.main_return_record_inserted), view = findViewById(android.R.id.content))
-                reload()
+                refresh()
             }
 
             RETURN_CODE_UPDATED_AND_RELOAD -> {
                 notifySnackbar(message = getString(R.string.main_return_record_updated), view = findViewById(android.R.id.content))
-                reload()
+                refresh()
             }
 
             RETURN_CODE_DELETED_AND_RELOAD -> {
                 notifySnackbar(message = getString(R.string.main_return_record_deleted), view = findViewById(android.R.id.content))
-                reload()
+                refresh()
             }
 
             RETURN_CODE_RELOAD_AFTER_RESET -> {
+                currentPage = 1
+                isLastPage = false
                 recyclerViewAdapter.clear()
             }
 
@@ -221,7 +232,7 @@ class MainActivity : AppCompatActivity() {
             // swipe refresh layout to top listener
             swipeRefreshLayout.setOnRefreshListener {
                 if (!isLoading) {
-                    reload()
+                    refresh()
                 }
 
                 swipeRefreshLayout.isRefreshing = false
@@ -230,21 +241,45 @@ class MainActivity : AppCompatActivity() {
             // settings for recycler view
             recyclerViewAdapter = RecyclerViewAdapter()
             recyclerViewAdapter.delegate = object : RecyclerViewAdapter.RecyclerViewAdapterDelegate {
-                override fun onLoadMore() {
-                    if (!isLoading) {
-                        loadMore()
-                    }
-                }
-
                 override fun onClickItem(itemBean: ItemBean) {
                     if (!isLoading) {
                         onItemClicked(itemBean.uuid)
                     }
                 }
+
+                override fun onLongClickItem(itemBean: ItemBean) {
+                    if (!isLoading) {
+                        reloadPosterFromServer(itemBean.uuid)
+                    }
+                }
             }
 
-            recyclerView.layoutManager = GridLayoutManager(this, 2)
+            layoutManager = GridLayoutManager(this, 2)
+            recyclerView.layoutManager = layoutManager
             recyclerView.adapter = recyclerViewAdapter
+
+            // endless scroll
+            recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+
+                    val visibleItems = layoutManager.childCount
+                    val totalItems = layoutManager.itemCount
+                    val firstItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                    if (!isLoading && !isLastPage) {
+                        Log.v(TAG, "endless scroll: visibleItems '$visibleItems' - totalItems '$totalItems' - firstItemPosition '$firstItemPosition'")
+
+                        if (
+                            ((visibleItems + firstItemPosition) >= totalItems) &&
+                            (firstItemPosition >= 0) &&
+                            (totalItems >= pageSize)
+                        ) {
+                            loadMore()
+                        }
+                    }
+                }
+            })
 
             // settings toolbar
             val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar_main)
@@ -360,7 +395,7 @@ class MainActivity : AppCompatActivity() {
             ensureMediaCollectionBkpFolderExists(this)
 
             // load first data entries
-            reload()
+            refresh()
         } catch (e: Exception) {
             showProgress()
             errorSnackbar(message = e.message ?: "Exception in onCreate method.", view = findViewById(R.id.main))
@@ -551,14 +586,14 @@ class MainActivity : AppCompatActivity() {
         // save entered text as search query for filter and reload recycler view list
         searchFilter = query
         skipFiltersSortsReset = true
-        reload()
+        refresh()
     }
 
     private fun onSearchQueryHidden() {
         // truncate search query for filter and reload recycler view list
         searchFilter = ""
         skipFiltersSortsReset = true
-        reload()
+        refresh()
     }
 
     private fun View.observeKeyboard(onKeyboardVisibilityChanged: (Boolean, Int) -> Unit) {
@@ -702,7 +737,7 @@ class MainActivity : AppCompatActivity() {
                 dialog.dismiss()
                 notifySnackbar(message = getString(R.string.main_filter_chosen, filterValue, selectedColumn), view = findViewById(android.R.id.content))
                 skipFiltersSortsReset = true
-                reload()
+                refresh()
             }
         }
 
@@ -729,7 +764,7 @@ class MainActivity : AppCompatActivity() {
             dialog.dismiss()
             notifySnackbar(message = getString(R.string.main_filter_removed, selectedFilterItem.displayName), view = findViewById(android.R.id.content))
             skipFiltersSortsReset = true
-            reload()
+            refresh()
         }
 
         dialog.setContentView(view)
@@ -810,7 +845,7 @@ class MainActivity : AppCompatActivity() {
                     view = findViewById(android.R.id.content)
                 )
                 skipFiltersSortsReset = true
-                reload()
+                refresh()
             }
         }
 
@@ -837,7 +872,7 @@ class MainActivity : AppCompatActivity() {
             dialog.dismiss()
             notifySnackbar(message = getString(R.string.main_sort_removed, selectedSortItem.displayName), view = findViewById(android.R.id.content))
             skipFiltersSortsReset = true
-            reload()
+            refresh()
         }
 
         dialog.setContentView(view)
@@ -845,7 +880,7 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun reload() {
+    private fun refresh() {
         if (!(
             (sorts.isEmpty()) &&
             (filters.isEmpty()) &&
@@ -853,7 +888,7 @@ class MainActivity : AppCompatActivity() {
         )) {
             if (skipFiltersSortsReset) {
                 skipFiltersSortsReset = false
-                reloadMore()
+                refreshData()
             } else {
                 // check if we want to reset all filters and sorts with swipe refresh, without a confirmation
                 if (!GlobalInstance.get().swipeRefreshDialog) {
@@ -869,7 +904,7 @@ class MainActivity : AppCompatActivity() {
                     updateBadge(filterBadgeTextView, filters.size)
                     updateBadge(sortBadgeTextView, sorts.size)
 
-                    reloadMore()
+                    refreshData()
                 } else {
                     // we need a delay for your custom dialog style, because of setOnRefreshListener
                     android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
@@ -890,10 +925,10 @@ class MainActivity : AppCompatActivity() {
                                 updateBadge(filterBadgeTextView, filters.size)
                                 updateBadge(sortBadgeTextView, sorts.size)
 
-                                reloadMore()
+                                refreshData()
                             }
                             .setNegativeButton(getString(R.string.text_no)) { _, _ ->
-                                reloadMore()
+                                refreshData()
                             }
                             .show()
                     }, 50)
@@ -901,23 +936,25 @@ class MainActivity : AppCompatActivity() {
             }
         } else {
             skipFiltersSortsReset = false
-            reloadMore()
+            refreshData()
         }
     }
 
-    private fun reloadMore() {
+    private fun refreshData() {
         showProgress("#AA000000")
+        currentPage = 1
+        isLastPage = false
 
         // get data from sqlite
         Thread {
-            val list = getData(0, 10)
+            val list = getData(0, pageSize)
 
             runOnUiThread {
                 if (list.size < 1) {
                     notifySnackbar(message = getString(R.string.main_no_records_found), view = findViewById(android.R.id.content))
                 }
 
-                recyclerViewAdapter.reload(list)
+                recyclerViewAdapter.refresh(list)
                 hideProgress()
             }
         }.start()
@@ -925,18 +962,19 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadMore() {
         showProgress("#AA000000")
+        currentPage++
 
         // get more data from sqlite
         Thread {
-            val list = getData(recyclerViewAdapter.itemCount, 10)
+            val list = getData(currentPage, pageSize)
 
             runOnUiThread {
+                recyclerViewAdapter.loadMore(list)
+                hideProgress()
+
                 if (list.size < 1) {
                     notifySnackbar(message = getString(R.string.main_no_records_found), view = findViewById(android.R.id.content))
                 }
-
-                recyclerViewAdapter.loadMore(list)
-                hideProgress()
             }
         }.start()
     }
@@ -962,12 +1000,12 @@ class MainActivity : AppCompatActivity() {
         progressTextView.text = progressText
     }
 
-    private fun getData(offset: Int, limit: Int): MutableList<ItemBean> {
+    private fun getData(page: Int, interval: Int): MutableList<ItemBean> {
         val list: MutableList<ItemBean> = mutableListOf()
 
         val o_recordInstance = MediaCollectionRecord()
-        o_recordInstance.Page = (offset / 10) + 1
-        o_recordInstance.Interval = limit
+        o_recordInstance.Page = page
+        o_recordInstance.Interval = interval
         //o_recordInstance.AutoTransaction = false
 
         if (sorts.isNotEmpty()) {
@@ -1036,6 +1074,8 @@ class MainActivity : AppCompatActivity() {
         if (sqlFilters.isNotEmpty()) {
             o_recordInstance.Filters = sqlFilters
         }
+
+        Log.v(TAG, "getData ${o_recordInstance.Page} ${o_recordInstance.Interval}")
 
         for (o_record in o_recordInstance.getRecords(false)) {
             if (o_record.ColumnDeleted != null) {
@@ -1297,8 +1337,7 @@ class MainActivity : AppCompatActivity() {
                     } finally {
                         runOnUiThread {
                             hideProgress()
-                            recyclerViewAdapter.clear()
-                            reload()
+                            refresh()
                         }
                     }
                 }.start()
@@ -1706,7 +1745,169 @@ class MainActivity : AppCompatActivity() {
             } finally {
                 runOnUiThread {
                     hideProgress()
-                    reload()
+                    refresh()
+                }
+            }
+        }.start()
+    }
+
+    private fun reloadPosterFromServer(s_uuid: String) {
+        var sslContext: javax.net.ssl.SSLContext? = null
+        lateinit var authPassphrase: String
+        lateinit var o_clientTask: net.forestany.forestj.lib.net.sock.task.send.https.TinyHttpsClient<javax.net.ssl.SSLSocket>
+
+        // create sslContext, socket task and socket instance
+        try {
+            // encrypt authentication password
+            val o_cryptography = net.forestany.forestj.lib.Cryptography(GlobalInstance.get().syncCommonPassphrase, net.forestany.forestj.lib.Cryptography.KEY256BIT)
+            val a_encrypted = o_cryptography.encrypt(GlobalInstance.get().syncAuthPassphrase?.toByteArray(java.nio.charset.StandardCharsets.UTF_8) ?: throw Exception(getString(R.string.main_sync_auth_passphrase_missing)))
+            authPassphrase = String(java.util.Base64.getEncoder().encode(a_encrypted), java.nio.charset.StandardCharsets.UTF_8)
+
+            if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".p12")) {
+                // use .p12 truststore
+                try {
+                    sslContext = createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".p12", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+
+                    if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks")) {
+                        // .p12 truststore did not work, use .bks truststore
+                        sslContext = try {
+                            createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            null
+                        }
+                    }
+                }
+            } else if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks")) {
+                // use .bks truststore
+                sslContext = try {
+                    createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    null
+                }
+            }
+
+            // create https config class
+            val o_clientConfig = net.forestany.forestj.lib.net.https.Config(
+                "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}",
+                net.forestany.forestj.lib.net.https.Mode.REST,
+                net.forestany.forestj.lib.net.sock.recv.ReceiveType.SOCKET
+            )
+
+            // create https client task
+            o_clientTask = net.forestany.forestj.lib.net.sock.task.send.https.TinyHttpsClient<javax.net.ssl.SSLSocket>(
+                o_clientConfig
+            )
+
+            // need this hack until we can set amountCyclesToleratingDelay to 0
+            o_clientTask.receiveMaxUnknownAmountInMiB = GlobalInstance.get().syncReceiveMaxUnknownAmountInMiB
+
+            // create client socket instance
+            val o_socketSend = net.forestany.forestj.lib.net.sock.send.SendTCP<javax.net.ssl.SSLSocket>(
+                javax.net.ssl.SSLSocket::class.java,
+                GlobalInstance.get().syncServerIp,
+                GlobalInstance.get().syncServerPort,
+                o_clientTask,
+                30000,
+                false,
+                1,
+                50,
+                GlobalInstance.get().syncReceiveBufferSize,
+                "127.0.0.1",
+                0,
+                sslContext
+            )
+
+            // set sending socket instance for https client
+            o_clientConfig.setSendingSocketInstanceForHttpClient(o_socketSend)
+        } catch (e: Exception) {
+            errorSnackbar(message = "Error: ${e.message ?: "Exception in reloadPosterFromServer method."}", view = findViewById(android.R.id.content))
+            return
+        }
+
+        deactivateSearchModeWithoutRequery()
+        showProgress()
+
+        Thread {
+            try {
+                // get all mediacollection records
+                val o_mediaCollectionRecordInstance = MediaCollectionRecord()
+
+                // any changes (insert/update) happens?
+                if (o_mediaCollectionRecordInstance.getRecord(mutableListOf<Any?>(s_uuid))) {
+                    // try multiple times to get poster data from server, in case of connection issues
+                    for (tries in 0..2) {
+                        // get poster data from server
+                        o_clientTask.setRequest(
+                            "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/poster?uuid=$s_uuid",
+                            net.forestany.forestj.lib.net.http.RequestType.GET
+                        )
+                        o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+                        o_clientTask.authenticationPassword = authPassphrase
+                        o_clientTask.executeRequest()
+
+                        if (o_clientTask.returnCode != 200) {
+                            // get poster data failed, try again
+                            continue
+                        }
+
+                        // get poster bytes from response
+                        val serverResponseGetPoster = cleanupResponse(o_clientTask.response)
+
+                        // clear poster data
+                        o_mediaCollectionRecordInstance.ColumnPoster = null
+                        o_mediaCollectionRecordInstance.updateRecord()
+
+                        // update poster data
+                        o_mediaCollectionRecordInstance.ColumnPoster = serverResponseGetPoster
+                        o_mediaCollectionRecordInstance.updateRecord()
+
+                        // get poster bytes length to check if we received all bytes
+                        o_clientTask.setRequest(
+                            "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/posterbyteslength?uuid=$s_uuid",
+                            net.forestany.forestj.lib.net.http.RequestType.GET
+                        )
+                        o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+                        o_clientTask.authenticationPassword = authPassphrase
+                        o_clientTask.executeRequest()
+
+                        if (o_clientTask.returnCode != 200) {
+                            // get poster bytes length failed, try again
+                            continue
+                        }
+
+                        // validate response from get poster bytes length
+                        val serverResponseGetPosterLength = cleanupResponse(o_clientTask.response)
+
+                        // response should be an integer
+                        if (!net.forestany.forestj.lib.Helper.isInteger(serverResponseGetPosterLength)) {
+                            // get poster bytes length failed, response is not an integer
+                            continue
+                        }
+
+                        if (serverResponseGetPosterLength.toInt() == o_mediaCollectionRecordInstance.ColumnPoster.length) {
+                            // get poster data successful, received bytes equal local bytes of poster data
+                            break
+                        } else {
+                            // get poster data failed, amount of bytes on both sides are not equal
+                            Thread.sleep(2000)
+                        }
+                    }
+                }
+                runOnUiThread {
+                    notifySnackbar(message = getString(R.string.main_sync_finished), view = findViewById(android.R.id.content))
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    errorSnackbar(message = "Error: ${e.message ?: "Exception in reloadPosterFromServer method."}", view = findViewById(android.R.id.content))
+                }
+            } finally {
+                runOnUiThread {
+                    hideProgress()
+                    refresh()
                 }
             }
         }.start()
@@ -1787,39 +1988,33 @@ class MainActivity : AppCompatActivity() {
             }
 
             if (o_mediaCollectionRecord.ColumnType!!.contentEquals("Movie")) {
+                totalItems++
+                totalMovieItems++
+
                 if (o_mediaCollectionRecord.ColumnSubType.contains("bluray")) {
-                    totalItems++
-                    totalMovieItems++
                     totalMovieBlurayItems++
                 }
 
                 if (o_mediaCollectionRecord.ColumnSubType.contains("dvd")) {
-                    totalItems++
-                    totalMovieItems++
                     totalMovieDVDItems++
                 }
 
                 if (o_mediaCollectionRecord.ColumnSubType.contains("4k")) {
-                    totalItems++
-                    totalMovieItems++
                     totalMovie4KItems++
                 }
             } else if (o_mediaCollectionRecord.ColumnType!!.contentEquals("Series")) {
+                totalItems++
+                totalSeriesItems++
+
                 if (o_mediaCollectionRecord.ColumnSubType.contains("bluray")) {
-                    totalItems++
-                    totalSeriesItems++
                     totalSeriesBlurayItems++
                 }
 
                 if (o_mediaCollectionRecord.ColumnSubType.contains("dvd")) {
-                    totalItems++
-                    totalSeriesItems++
                     totalSeriesDVDItems++
                 }
 
                 if (o_mediaCollectionRecord.ColumnSubType.contains("4k")) {
-                    totalItems++
-                    totalSeriesItems++
                     totalSeries4KItems++
                 }
             }
@@ -1829,24 +2024,24 @@ class MainActivity : AppCompatActivity() {
             |%-15s %5d
             |
             |%-15s %5d
-            |%-15s %5d
-            |%-15s %5d
-            |%-15s %5d
+            |%-23s %5d
+            |%-23s %5d
+            |%-23s %5d
             |
             |%-15s %5d
-            |%-15s %5d
-            |%-15s %5d
-            |%-15s %5d
+            |%-23s %5d
+            |%-23s %5d
+            |%-23s %5d
         """.trimMargin().format(
             "Total Items:", totalItems,
             "Movie Items:", totalMovieItems,
-            "    Bluray:", totalMovieBlurayItems,
-            "    DVD:", totalMovieDVDItems,
-            "    4K:", totalMovie4KItems,
+            "    Bluray check marks:", totalMovieBlurayItems,
+            "    DVD check marks:", totalMovieDVDItems,
+            "    4K check marks:", totalMovie4KItems,
             "Series Items:", totalSeriesItems,
-            "    Bluray:", totalSeriesBlurayItems,
-            "    DVD:", totalSeriesDVDItems,
-            "    4K:", totalSeries4KItems
+            "    Bluray check marks:", totalSeriesBlurayItems,
+            "    DVD check marks:", totalSeriesDVDItems,
+            "    4K check marks:", totalSeries4KItems
         )
 
         val textView = TextView(this).apply {

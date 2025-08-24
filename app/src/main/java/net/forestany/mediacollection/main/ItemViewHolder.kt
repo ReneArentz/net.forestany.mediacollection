@@ -10,6 +10,7 @@ import net.forestany.mediacollection.R
 class ItemViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
     interface ItemViewHolderDelegate {
         fun onItemViewClick(itemBean: ItemBean)
+        fun onItemViewLongClick(itemBean: ItemBean)
     }
 
     // weak reference for low memory use
@@ -35,6 +36,11 @@ class ItemViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
     private fun setListener() {
         view.get()?.setOnClickListener {
             delegate?.onItemViewClick(itemBean)
+        }
+
+        view.get()?.setOnLongClickListener {
+            delegate?.onItemViewLongClick(itemBean)
+            true
         }
     }
 

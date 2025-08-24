@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
-import net.forestany.mediacollection.R
 import android.os.Bundle
 import android.provider.OpenableColumns
 import android.util.Log
@@ -17,16 +16,18 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
+import androidx.preference.EditTextPreference
+import androidx.preference.ListPreference
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import net.forestany.mediacollection.MainActivity
+import net.forestany.mediacollection.R
 import net.forestany.mediacollection.main.GlobalInstance
 import net.forestany.mediacollection.main.LanguageRecord
 import net.forestany.mediacollection.main.MediaCollectionRecord
 import net.forestany.mediacollection.main.Util.errorSnackbar
-import androidx.preference.EditTextPreference
-import androidx.preference.ListPreference
-import androidx.preference.Preference
 import net.forestany.mediacollection.main.Util.notifySnackbar
 
 class SettingsActivity : AppCompatActivity() {
@@ -37,6 +38,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private val glob: GlobalInstance = GlobalInstance.get()
     private lateinit var openFileLauncher: ActivityResultLauncher<Intent>
+    private lateinit var openSettingsFileLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // default settings
@@ -69,7 +71,7 @@ class SettingsActivity : AppCompatActivity() {
             }
         )
 
-        setupFilePicker()
+        setupFilePickers()
 
         Log.v(TAG, "onCreate $TAG")
     }
@@ -137,6 +139,18 @@ class SettingsActivity : AppCompatActivity() {
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
+
+            val preferenceCategory = findPreference<PreferenceCategoryClickable>("preference_category_general")
+
+            preferenceCategory?.onClickListener = {
+                // nothing to do
+                true
+            }
+
+            preferenceCategory?.onLongClickListener = {
+                (activity as? SettingsActivity)?.loadSettingsFromFile()
+                true
+            }
         }
 
         override fun onResume() {
@@ -496,7 +510,17 @@ class SettingsActivity : AppCompatActivity() {
         openFileLauncher.launch(intent)
     }
 
-    private fun setupFilePicker() {
+    private fun loadSettingsFromFile() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false)
+        }
+
+        openSettingsFileLauncher.launch(intent)
+    }
+
+    private fun setupFilePickers() {
         openFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 // get choosen file
@@ -537,6 +561,127 @@ class SettingsActivity : AppCompatActivity() {
                     notifySnackbar(message = getString(R.string.settings_truststore_bks_overwritten), view = findViewById(android.R.id.content))
                 } else {
                     errorSnackbar(message = getString(R.string.settings_truststore_not_found), view = findViewById(android.R.id.content))
+                }
+            }
+        }
+
+        openSettingsFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // get choosen file
+                val clipData = result.data?.clipData
+                val uriList = mutableListOf<android.net.Uri>()
+
+                if (clipData != null) {
+                    for (i in 0 until clipData.itemCount) {
+                        uriList.add(clipData.getItemAt(i).uri)
+                    }
+                } else {
+                    result.data?.data?.let { uriList.add(it) }
+                }
+
+                // check if .txt file is chosen
+                val txtFile = uriList.find { getFileNameFromUri(this, it).endsWith(".txt", true) }
+
+                if (txtFile != null) {
+                    val settingsList = mutableMapOf<String, String>()
+
+                    contentResolver.openInputStream(txtFile)?.bufferedReader().use { reader ->
+                        reader?.forEachLine { line ->
+
+                            Log.d(TAG, line)
+
+                            if (line.startsWith("search_tmdb_api_key")) {
+                                val keyValue: List<String> = line.split("=")
+
+                                if (
+                                    (keyValue.size == 2) &&
+                                    (!net.forestany.forestj.lib.Helper.isStringEmpty(keyValue[1].trim()))
+                                ) {
+                                    settingsList["search_tmdb_api_key"] = keyValue[1].trim()
+                                }
+                            } else if (line.startsWith("sync_server_ip")) {
+                                val keyValue: List<String> = line.split("=")
+
+                                if (
+                                    (keyValue.size == 2) &&
+                                    (!net.forestany.forestj.lib.Helper.isStringEmpty(keyValue[1].trim()))
+                                ) {
+                                    settingsList["sync_server_ip"] = keyValue[1].trim()
+                                }
+                            } else if (line.startsWith("sync_server_port")) {
+                                val keyValue: List<String> = line.split("=")
+
+                                if (
+                                    (keyValue.size == 2) &&
+                                    (!net.forestany.forestj.lib.Helper.isStringEmpty(keyValue[1].trim())) &&
+                                    (net.forestany.forestj.lib.Helper.isInteger(keyValue[1].trim()))
+                                ) {
+                                    settingsList["sync_server_port"] = keyValue[1].trim()
+                                }
+                            } else if (line.startsWith("sync_common_passphrase")) {
+                                val keyValue: List<String> = line.split("=")
+
+                                if (
+                                    (keyValue.size == 2) &&
+                                    (!net.forestany.forestj.lib.Helper.isStringEmpty(keyValue[1].trim()))
+                                ) {
+                                    settingsList["sync_common_passphrase"] = keyValue[1].trim()
+                                }
+                            } else if (line.startsWith("sync_auth_user")) {
+                                val keyValue: List<String> = line.split("=")
+
+                                if (
+                                    (keyValue.size == 2) &&
+                                    (!net.forestany.forestj.lib.Helper.isStringEmpty(keyValue[1].trim()))
+                                ) {
+                                    settingsList["sync_auth_user"] = keyValue[1].trim()
+                                }
+                            } else if (line.startsWith("sync_auth_passphrase")) {
+                                val keyValue: List<String> = line.split("=")
+
+                                if (
+                                    (keyValue.size == 2) &&
+                                    (!net.forestany.forestj.lib.Helper.isStringEmpty(keyValue[1].trim()))
+                                ) {
+                                    settingsList["sync_auth_passphrase"] = keyValue[1].trim()
+                                }
+                            } else if (line.startsWith("sync_truststore_filename")) {
+                                val keyValue: List<String> = line.split("=")
+
+                                if (
+                                    (keyValue.size == 2) &&
+                                    (!net.forestany.forestj.lib.Helper.isStringEmpty(keyValue[1].trim()))
+                                ) {
+                                    settingsList["sync_truststore_filename"] = keyValue[1].trim()
+                                }
+                            } else if (line.startsWith("sync_truststore_password")) {
+                                val keyValue: List<String> = line.split("=")
+
+                                if (
+                                    (keyValue.size == 2) &&
+                                    (!net.forestany.forestj.lib.Helper.isStringEmpty(keyValue[1].trim()))
+                                ) {
+                                    settingsList["sync_truststore_password"] = keyValue[1].trim()
+                                }
+                            }
+                        }
+                    }
+
+                    if (settingsList.isNotEmpty()) {
+                        val sharedPreferences = getSharedPreferences("${packageName}_preferences", Context.MODE_PRIVATE)
+
+                        sharedPreferences.edit(commit = true) {
+                            settingsList.forEach { pair ->
+                                putString(pair.key, pair.value)
+                            }
+                        }
+
+                        notifySnackbar(message = getString(R.string.settings_load_file_done), view = findViewById(android.R.id.content))
+                    } else {
+                        errorSnackbar(message = getString(R.string.settings_load_file_empty), view = findViewById(android.R.id.content))
+                    }
+                } else {
+                    errorSnackbar(message = getString(R.string.settings_load_file_not_found), view = findViewById(android.R.id.content))
                 }
             }
         }

@@ -194,6 +194,10 @@
     <string name="settings_menu_reset">Database Reset</string>
     <string name="settings_menu_factory_reset">Factory Reset</string>
 
+    <string name="settings_load_file_not_found">Please select a .txt file.</string>
+    <string name="settings_load_file_empty">File does not contain any settings to overwrite.</string>
+    <string name="settings_load_file_done">Settings loaded from file.</string>
+
     <string name="settings_truststore_p12_overwritten">Truststore file \'.p12\' overwritten.</string>
     <string name="settings_truststore_bks_overwritten">Truststore file \'.bks\' overwritten.</string>
     <string name="settings_truststore_not_found">Please select a .p12 or a .bks file.</string>

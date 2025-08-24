@@ -194,6 +194,10 @@
     <string name="settings_menu_reset">Datenbank zurücksetzen</string>
     <string name="settings_menu_factory_reset">Werkseinstellungen</string>
 
+    <string name="settings_load_file_not_found">Bitte wählen Sie eine .txt Datei aus.</string>
+    <string name="settings_load_file_empty">Datei enthält keine Einstellungen zum Überschreiben.</string>
+    <string name="settings_load_file_done">Einstellungen aus Datei geladen.</string>
+
     <string name="settings_truststore_p12_overwritten">Truststore Datei \'.p12\' überschrieben.</string>
     <string name="settings_truststore_bks_overwritten">Truststore Datei \'.bks\' überschrieben.</string>
     <string name="settings_truststore_not_found">Bitte wählen Sie eine .p12 oder eine .bks Datei aus.</string>
