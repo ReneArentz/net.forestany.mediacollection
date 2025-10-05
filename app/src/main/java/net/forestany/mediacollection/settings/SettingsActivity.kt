@@ -749,11 +749,11 @@ class SettingsActivity : AppCompatActivity() {
                             throw Exception(getString(R.string.settings_reset_data_no_db))
                         }
 
-                        // create mediacollection record and language record instance
+                        // create media collection record and language record instance
                         val o_mediaCollectionRecordInstance = MediaCollectionRecord()
                         val o_languageRecordInstance = LanguageRecord()
 
-                        // truncate mediacollection table
+                        // truncate media collection table
                         if (o_mediaCollectionRecordInstance.truncateTable() < 0) {
                             throw Exception(getString(R.string.settings_reset_data_not_truncate_mediacollection))
                         }

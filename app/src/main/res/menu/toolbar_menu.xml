@@ -36,4 +36,14 @@
         android:title="@string/main_menu_statistic"
         android:icon="@drawable/ic_statistic"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/mI_showNoPoster"
+        android:title="@string/main_menu_no_poster"
+        android:icon="@drawable/ic_no_poster"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/mI_showLastSeen"
+        android:title="@string/main_menu_last_seen"
+        android:icon="@drawable/ic_last_seen"
+        app:showAsAction="never" />
 </menu>

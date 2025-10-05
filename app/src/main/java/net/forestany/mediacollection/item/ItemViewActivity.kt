@@ -71,7 +71,7 @@ class ItemViewActivity : AppCompatActivity() {
                 }
             )
 
-            // initialize mediacollection record instance
+            // initialize media collection record instance
             record = MediaCollectionRecord()
 
             // get UUID extra from MainActivity

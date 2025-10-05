@@ -1,15 +1,11 @@
 package net.forestany.mediacollection
 
-//TODO allow in search fields the characters '#' '@' '&' - look for 'a-zA-Z'
-//TODO special filter for "FiledUnder" - if just one character entered look for this as uppercase at the start of the value or or alone as uppercase with a whitespace after it in the value
-//TODO not so many sort and filter columns
-//TODO fast view to last seen
-
 // android studio: collapse all methods: ctrl + shift + * and then 1 on numpad
 // android studio: expand all with ctrl + shift + numpad + several times
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.NotificationManager
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
@@ -18,6 +14,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.graphics.Rect
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.OpenableColumns
@@ -64,6 +61,7 @@ import net.forestany.mediacollection.main.GlobalInstance
 import net.forestany.mediacollection.main.ItemBean
 import net.forestany.mediacollection.main.JSONMediaCollection
 import net.forestany.mediacollection.main.LanguageRecord
+import net.forestany.mediacollection.main.MCForegroundService
 import net.forestany.mediacollection.main.MediaCollectionRecord
 import net.forestany.mediacollection.main.RecyclerViewAdapter
 import net.forestany.mediacollection.main.SortItem
@@ -88,6 +86,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var databaseInstance: net.forestany.mediacollection.main.Database
     private lateinit var jsonSchema: String
+//    private lateinit var jsonSmallSchema: String
+//    private lateinit var jsonRecordSchema: String
     private lateinit var openMultipleFilesLauncher: ActivityResultLauncher<Intent>
     private var searchFilter = ""
     private var filters = mutableMapOf<String, String>()
@@ -97,6 +97,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sortColumns: MutableMap<String, String>
     private var sortBadgeTextView: TextView? = null
     private var skipFiltersSortsReset = false
+    private var showLastSeen = false
+    private var showNoPoster = false
     private var isLoading = false
     private var isLastPage = false
     private var currentPage = 1
@@ -223,6 +225,10 @@ class MainActivity : AppCompatActivity() {
             GlobalInstance.get().searchInstance = net.forestany.mediacollection.search.Search(this)
             // load JSONMediaCollection.json schema from assets folder
             jsonSchema = net.forestany.mediacollection.search.Search.loadSchemaFromAssets(this, "JSONMediaCollection.json")
+//            // load JSONMediaCollectionSmall.json schema from assets folder
+//            jsonSmallSchema = net.forestany.mediacollection.search.Search.loadSchemaFromAssets(this, "JSONMediaCollectionSmall.json")
+//            // load JSONMediaCollectionRecord.json schema from assets folder
+//            jsonRecordSchema = net.forestany.mediacollection.search.Search.loadSchemaFromAssets(this, "JSONMediaCollectionRecord.json")
 
             // init layout element variables
             swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
@@ -248,9 +254,9 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onLongClickItem(itemBean: ItemBean) {
-                    if (!isLoading) {
-                        reloadPosterFromServer(itemBean.uuid)
-                    }
+//                    if (!isLoading) {
+//                        reloadPosterFromServer(itemBean.uuid)
+//                    }
                 }
             }
 
@@ -319,7 +325,7 @@ class MainActivity : AppCompatActivity() {
                 for (i in start until end) {
                     val c = source[i]
                     // convert char to String for regex matching
-                    if (!c.toString().matches(Regex("[a-zA-Z0-9öäüÖÄÜ =!.\\-+,;:_?ß]*"))) {
+                    if (!c.toString().matches(Regex("[a-zA-Z0-9öäüÖÄÜ =!.\\-+,;:_?ß#@&]*"))) {
                         return@InputFilter "" // reject input
                     }
                 }
@@ -391,7 +397,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            // check for mediacollection backup folder
+            // check for media collection backup folder
             ensureMediaCollectionBkpFolderExists(this)
 
             // load first data entries
@@ -467,7 +473,7 @@ class MainActivity : AppCompatActivity() {
         //o_loggingConfigAll.level = java.util.logging.Level.FINER
         //o_loggingConfigAll.level = java.util.logging.Level.FINEST
         //o_loggingConfigAll.level = java.util.logging.Level.ALL
-        o_loggingConfigAll.useConsole = true
+        o_loggingConfigAll.useConsole = false
 
         o_loggingConfigAll.consoleLevel = java.util.logging.Level.OFF
         //o_loggingConfigAll.consoleLevel = java.util.logging.Level.SEVERE
@@ -667,6 +673,18 @@ class MainActivity : AppCompatActivity() {
 
                     return true
                 }
+
+                R.id.mI_showNoPoster -> {
+                    onShowNoPosterClicked()
+
+                    return true
+                }
+
+                R.id.mI_showLastSeen -> {
+                    onShowLastSeenClicked()
+
+                    return true
+                }
             }
         }
 
@@ -708,7 +726,7 @@ class MainActivity : AppCompatActivity() {
         spinnerColumn.adapter = adapterSpinnerColumn
 
         val filterItemValueEdittext = view.findViewById<EditText>(R.id.filterValue)
-        val allowedCharsRegex = "[a-zA-Z0-9öäüÖÄÜ< >=!.\\-+,;:_?ß]*"
+        val allowedCharsRegex = "[a-zA-Z0-9öäüÖÄÜ< >=!.\\-+,;:_?ß#@&]*"
 
         val filter = InputFilter { source, start, end, _, _, _ ->
             for (i in start until end) {
@@ -992,13 +1010,18 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.progress_bar_main_text).visibility = View.GONE
     }
 
-    private fun updateProgressText(current: Int, total: Int) {
-        val percent = (current.toDouble() * 100) / total
-        val progressText = "${String.format(java.util.Locale.getDefault(), "%.2f", percent)} %"
-        val progressTextView = findViewById<TextView>(R.id.progress_bar_main_text)
-        progressTextView.visibility = View.VISIBLE
-        progressTextView.text = progressText
-    }
+/*//    private fun updateProgressText(current: Int, total: Int, note: String = "") {
+//        val percent = (current.toDouble() * 100) / total
+//        var progressText = "${String.format(java.util.Locale.getDefault(), "%.2f", percent)} %"
+//
+//        if (note.isNotBlank()) {
+//            progressText += "\n" + note
+//        }
+//
+//        val progressTextView = findViewById<TextView>(R.id.progress_bar_main_text)
+//        progressTextView.visibility = View.VISIBLE
+//        progressTextView.text = progressText
+//    }*/
 
     private fun getData(page: Int, interval: Int): MutableList<ItemBean> {
         val list: MutableList<ItemBean> = mutableListOf()
@@ -1067,11 +1090,46 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (searchFilter.isNotEmpty()) {
-            sqlFilters.add(net.forestany.forestj.lib.sql.Filter("Title", "%${searchFilter}%", "LIKE", "OR"))
-            sqlFilters.add(net.forestany.forestj.lib.sql.Filter("OriginalTitle", "%${searchFilter}%", "LIKE", "OR"))
+            // automatically filter with one character with 'FiledUnder'
+            if (searchFilter.length == 1) {
+                sqlFilters.add(net.forestany.forestj.lib.sql.Filter("FiledUnder", "${searchFilter.uppercase()}%", "LIKE", "OR"))
+                sqlFilters.add(net.forestany.forestj.lib.sql.Filter("FiledUnder", "% ${searchFilter.uppercase()} %", "LIKE", "OR"))
+            } else {
+                sqlFilters.add(net.forestany.forestj.lib.sql.Filter("Title", "%${searchFilter}%", "LIKE", "OR"))
+                sqlFilters.add(net.forestany.forestj.lib.sql.Filter("OriginalTitle", "%${searchFilter}%", "LIKE", "OR"))
+            }
+        }
+
+        if (showNoPoster) {
+            showNoPoster = false
+
+            sqlFilters.add(net.forestany.forestj.lib.sql.Filter("Poster", "NULL", "IS", "OR"))
+        }
+
+        if (showLastSeen) {
+            showLastSeen = false
+
+            o_recordInstance.Sort = mutableMapOf("LastSeen" to false, "Title" to true)
         }
 
         if (sqlFilters.isNotEmpty()) {
+            if (sqlFilters.size == 1) {
+                // automatically filter with one character with 'FiledUnder'
+                val filter = sqlFilters[0]
+                val filterValue = filter.o_value.toString()
+
+                if (
+                    (filter.s_column!!.contentEquals("FiledUnder")) &&
+                    (filter.s_operator!!.contentEquals("LIKE")) &&
+                    (filterValue.length == 3) &&
+                    (filterValue.startsWith("%")) &&
+                    (filterValue.endsWith("%"))
+                ) {
+                    filter.o_value = filterValue.substring(1)
+                    sqlFilters.add(net.forestany.forestj.lib.sql.Filter("FiledUnder", "% ${filterValue.substring(1, 2).uppercase()} %", "LIKE", "OR"))
+                }
+            }
+
             o_recordInstance.Filters = sqlFilters
         }
 
@@ -1124,7 +1182,7 @@ class MainActivity : AppCompatActivity() {
                     o_jsonMediaCollection.Languages.add(o_languageRecord)
                 }
 
-                // gather all mediacollection records, poster data in separate stringbuilder
+                // gather all media collection records, poster data in separate string builder
                 val o_postersStringBuilder = StringBuilder()
                 val o_mediaCollectionRecordInstance = MediaCollectionRecord()
 
@@ -1232,7 +1290,7 @@ class MainActivity : AppCompatActivity() {
         openMultipleFilesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val clipData = result.data?.clipData
-                val uriList = mutableListOf<android.net.Uri>()
+                val uriList = mutableListOf<Uri>()
 
                 if (clipData != null) {
                     for (i in 0 until clipData.itemCount) {
@@ -1246,10 +1304,10 @@ class MainActivity : AppCompatActivity() {
                 val txtFile = uriList.find { getFileNameFromUri(context, it).endsWith(".dat.txt", true) }
 
                 if (jsonFile != null && txtFile != null) {
-                    val jsonContent = context.contentResolver.openInputStream(jsonFile)?.bufferedReader()?.use { it.readText() } ?: throw Exception(getString(R.string.main_find_json_failure))
-                    val datContent = context.contentResolver.openInputStream(txtFile)?.bufferedReader()?.use { it.readText() } ?: throw Exception(getString(R.string.main_find_dat_failure))
+                    //val jsonContent = context.contentResolver.openInputStream(jsonFile)?.bufferedReader()?.use { it.readText() } ?: throw Exception(getString(R.string.main_find_json_failure))
+                    //val dataContent = context.contentResolver.openInputStream(txtFile)?.bufferedReader()?.use { it.readText() } ?: throw Exception(getString(R.string.main_find_dat_failure))
 
-                    handleImport(jsonContent, datContent)
+                    handleImport(jsonFile, txtFile)
                 } else {
                     errorSnackbar(message = getString(R.string.main_select_json_and_dat), view = findViewById(android.R.id.content))
                 }
@@ -1257,7 +1315,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getFileNameFromUri(context: Context, uri: android.net.Uri): String {
+    private fun getFileNameFromUri(context: Context, uri: Uri): String {
         val cursor = context.contentResolver.query(uri, null, null, null, null)
         cursor?.use {
             val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
@@ -1268,797 +1326,1115 @@ class MainActivity : AppCompatActivity() {
         return "unknown"
     }
 
-    private fun handleImport(jsonContent: String, datContent: String) {
+    private fun handleImport(jsonFile: Uri, txtFile: Uri) {
         androidx.appcompat.app.AlertDialog.Builder(this@MainActivity, R.style.AlertDialogStyle)
             .setTitle(getString(R.string.main_confirm_action))
             .setMessage(getString(R.string.main_import_question))
             .setIcon(android.R.drawable.ic_dialog_alert)
             .setPositiveButton(getString(R.string.text_yes)) { _, _ ->
-                deactivateSearchModeWithoutRequery()
-                showProgress()
+                val serviceIntent = Intent(this, MCForegroundService::class.java).apply {
+                    action = MCForegroundService.ACTION_IMPORT
+                    putExtra(MCForegroundService.IMPORT_FILE_JSON, jsonFile.toString())
+                    putExtra(MCForegroundService.IMPORT_FILE_DATA, txtFile.toString())
+                }
 
-                Thread {
-                    try {
-                        var o_mediaCollectionRecordInstance = MediaCollectionRecord()
-                        val o_languageRecordInstance = LanguageRecord()
-
-                        // decode json data
-                        val o_json = net.forestany.forestj.lib.io.JSON(mutableListOf<String?>(jsonSchema))
-                        val o_jsonMediaCollection = o_json.jsonDecode(mutableListOf(jsonContent)) as JSONMediaCollection
-
-                        if (o_mediaCollectionRecordInstance.truncateTable() < 0) {
-                            throw Exception(getString(R.string.main_import_not_truncate_mediacollection))
-                        }
-
-                        if (o_languageRecordInstance.truncateTable() < 0) {
-                            throw Exception(getString(R.string.main_import_not_truncate_languages))
-                        }
-
-                        if (o_jsonMediaCollection.Languages.size > 0) {
-                            for (jsonLanguageRecord in o_jsonMediaCollection.Languages) {
-                                if (jsonLanguageRecord.insertRecord() < 0) {
-                                    Log.e(TAG, "Could not insert record with '${jsonLanguageRecord.ColumnLanguage}'.")
-                                }
-                            }
-                        }
-
-                        if (o_jsonMediaCollection.Records.size > 0) {
-                            for (jsonMediaCollectionRecord in o_jsonMediaCollection.Records) {
-                                if (jsonMediaCollectionRecord.insertRecord() < 0) {
-                                    Log.e(TAG, "Could not insert record with '${jsonMediaCollectionRecord.ColumnTitle}'.")
-                                }
-                            }
-                        }
-
-                        // ---------------------------
-
-                        // decode dat data
-                        val contentList = datContent.split(Regex("\r\n|\r|\n")).filter { it.isNotBlank() }
-
-                        for (s_foo in contentList) {
-                            if (s_foo.length > 100) {
-                                val s_uuid = s_foo.substring(0, 36)
-                                o_mediaCollectionRecordInstance = MediaCollectionRecord()
-
-                                if (o_mediaCollectionRecordInstance.getOneRecord(mutableListOf("UUID"), mutableListOf(s_uuid) as List<Any>?)) {
-                                    o_mediaCollectionRecordInstance.ColumnPoster = s_foo.substring(36)
-                                    o_mediaCollectionRecordInstance.updateRecord()
-                                }
-                            }
-                        }
-
-                        runOnUiThread {
-                            notifySnackbar(message = getString(R.string.main_import_finished), view = findViewById(android.R.id.content))
-                        }
-                    } catch (e: Exception) {
-                        runOnUiThread {
-                            errorSnackbar(message = "Error: ${e.message ?: "Exception in handleImport method."}", view = findViewById(android.R.id.content))
-                        }
-                    } finally {
-                        runOnUiThread {
-                            hideProgress()
-                            refresh()
-                        }
-                    }
-                }.start()
+                ContextCompat.startForegroundService(this, serviceIntent)
+/*//                deactivateSearchModeWithoutRequery()
+//                showProgress()
+//
+//                Thread {
+//                    try {
+//                        var o_mediaCollectionRecordInstance = MediaCollectionRecord()
+//                        val o_languageRecordInstance = LanguageRecord()
+//
+//                        // decode json data
+//                        val o_json = net.forestany.forestj.lib.io.JSON(mutableListOf<String?>(jsonSchema))
+//                        val o_jsonMediaCollection = o_json.jsonDecode(mutableListOf(jsonContent)) as JSONMediaCollection
+//
+//                        if (o_mediaCollectionRecordInstance.truncateTable() < 0) {
+//                            throw Exception(getString(R.string.main_import_not_truncate_mediacollection))
+//                        }
+//
+//                        if (o_languageRecordInstance.truncateTable() < 0) {
+//                            throw Exception(getString(R.string.main_import_not_truncate_languages))
+//                        }
+//
+//                        if (o_jsonMediaCollection.Languages.size > 0) {
+//                            for (jsonLanguageRecord in o_jsonMediaCollection.Languages) {
+//                                if (jsonLanguageRecord.insertRecord() < 0) {
+//                                    Log.e(TAG, "Could not insert record with '${jsonLanguageRecord.ColumnLanguage}'.")
+//                                }
+//                            }
+//                        }
+//
+//                        if (o_jsonMediaCollection.Records.size > 0) {
+//                            for (jsonMediaCollectionRecord in o_jsonMediaCollection.Records) {
+//                                if (jsonMediaCollectionRecord.insertRecord() < 0) {
+//                                    Log.e(TAG, "Could not insert record with '${jsonMediaCollectionRecord.ColumnTitle}'.")
+//                                }
+//                            }
+//                        }
+//
+//                        // ---------------------------
+//
+//                        // decode dat data
+//                        val contentList = dataContent.split(Regex("\r\n|\r|\n")).filter { it.isNotBlank() }
+//
+//                        for (s_foo in contentList) {
+//                            if (s_foo.length > 100) {
+//                                val s_uuid = s_foo.substring(0, 36)
+//                                o_mediaCollectionRecordInstance = MediaCollectionRecord()
+//
+//                                if (o_mediaCollectionRecordInstance.getOneRecord(mutableListOf("UUID"), mutableListOf(s_uuid) as List<Any>?)) {
+//                                    o_mediaCollectionRecordInstance.ColumnPoster = s_foo.substring(36)
+//                                    o_mediaCollectionRecordInstance.updateRecord()
+//                                }
+//                            }
+//                        }
+//
+//                        runOnUiThread {
+//                            notifySnackbar(message = getString(R.string.main_import_finished), view = findViewById(android.R.id.content))
+//                        }
+//                    } catch (e: Exception) {
+//                        runOnUiThread {
+//                            errorSnackbar(message = "Error: ${e.message ?: "Exception in handleImport method."}", view = findViewById(android.R.id.content))
+//                        }
+//                    } finally {
+//                        runOnUiThread {
+//                            hideProgress()
+//                            refresh()
+//                        }
+//                    }
+//                }.start()*/
             }
             .setNegativeButton(getString(R.string.text_no), null)
             .show()
     }
 
     private fun onSyncClicked() {
-        var sslContext: javax.net.ssl.SSLContext? = null
-        lateinit var authPassphrase: String
-        lateinit var o_clientTask: net.forestany.forestj.lib.net.sock.task.send.https.TinyHttpsClient<javax.net.ssl.SSLSocket>
-
-        // create sslContext, socket task and socket instance
-        try {
-            // encrypt authentication password
-            val o_cryptography = net.forestany.forestj.lib.Cryptography(GlobalInstance.get().syncCommonPassphrase, net.forestany.forestj.lib.Cryptography.KEY256BIT)
-            val a_encrypted = o_cryptography.encrypt(GlobalInstance.get().syncAuthPassphrase?.toByteArray(java.nio.charset.StandardCharsets.UTF_8) ?: throw Exception(getString(R.string.main_sync_auth_passphrase_missing)))
-            authPassphrase = String(java.util.Base64.getEncoder().encode(a_encrypted), java.nio.charset.StandardCharsets.UTF_8)
-
-            if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".p12")) {
-                // use .p12 truststore
-                try {
-                    sslContext = createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".p12", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
-                } catch (e: Exception) {
-                    e.printStackTrace()
-
-                    if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks")) {
-                        // .p12 truststore did not work, use .bks truststore
-                        sslContext = try {
-                            createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            null
-                        }
-                    }
-                }
-            } else if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks")) {
-                // use .bks truststore
-                sslContext = try {
-                    createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    null
-                }
-            }
-
-            // create https config class
-            val o_clientConfig = net.forestany.forestj.lib.net.https.Config(
-                "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}",
-                net.forestany.forestj.lib.net.https.Mode.REST,
-                net.forestany.forestj.lib.net.sock.recv.ReceiveType.SOCKET
-            )
-
-            // create https client task
-            o_clientTask = net.forestany.forestj.lib.net.sock.task.send.https.TinyHttpsClient<javax.net.ssl.SSLSocket>(
-                o_clientConfig
-            )
-
-            // need this hack until we can set amountCyclesToleratingDelay to 0
-            o_clientTask.receiveMaxUnknownAmountInMiB = GlobalInstance.get().syncReceiveMaxUnknownAmountInMiB
-
-            // create client socket instance
-            val o_socketSend = net.forestany.forestj.lib.net.sock.send.SendTCP<javax.net.ssl.SSLSocket>(
-                javax.net.ssl.SSLSocket::class.java,
-                GlobalInstance.get().syncServerIp,
-                GlobalInstance.get().syncServerPort,
-                o_clientTask,
-                30000,
-                false,
-                1,
-                50,
-                GlobalInstance.get().syncReceiveBufferSize,
-                "127.0.0.1",
-                0,
-                sslContext
-            )
-
-            // set sending socket instance for https client
-            o_clientConfig.setSendingSocketInstanceForHttpClient(o_socketSend)
-        } catch (e: Exception) {
-            errorSnackbar(message = "Error: ${e.message ?: "Exception in onSyncClicked method."}", view = findViewById(android.R.id.content))
-            return
+        val serviceIntent = Intent(this, MCForegroundService::class.java).apply {
+            action = MCForegroundService.ACTION_SYNC
         }
 
+        ContextCompat.startForegroundService(this, serviceIntent)
+    }
+
+/*//    private fun onSyncClicked() {
+//        var sslContext: javax.net.ssl.SSLContext? = null
+//        lateinit var authPassphrase: String
+//        lateinit var o_clientTask: net.forestany.forestj.lib.net.sock.task.send.https.TinyHttpsClient<javax.net.ssl.SSLSocket>
+//
+//        // create sslContext, socket task and socket instance
+//        try {
+//            // encrypt authentication password
+//            val o_cryptography = net.forestany.forestj.lib.Cryptography(GlobalInstance.get().syncCommonPassphrase, net.forestany.forestj.lib.Cryptography.KEY256BIT)
+//            val a_encrypted = o_cryptography.encrypt(GlobalInstance.get().syncAuthPassphrase?.toByteArray(java.nio.charset.StandardCharsets.UTF_8) ?: throw Exception(getString(R.string.main_sync_auth_passphrase_missing)))
+//            authPassphrase = String(java.util.Base64.getEncoder().encode(a_encrypted), java.nio.charset.StandardCharsets.UTF_8)
+//
+//            if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".p12")) {
+//                // use .p12 truststore
+//                try {
+//                    sslContext = createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".p12", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
+//                } catch (e: Exception) {
+//                    e.printStackTrace()
+//
+//                    if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks")) {
+//                        // .p12 truststore did not work, use .bks truststore
+//                        sslContext = try {
+//                            createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
+//                        } catch (e: Exception) {
+//                            e.printStackTrace()
+//                            null
+//                        }
+//                    }
+//                }
+//            } else if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks")) {
+//                // use .bks truststore
+//                sslContext = try {
+//                    createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
+//                } catch (e: Exception) {
+//                    e.printStackTrace()
+//                    null
+//                }
+//            }
+//
+//            // create https config class
+//            val o_clientConfig = net.forestany.forestj.lib.net.https.Config(
+//                "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}",
+//                net.forestany.forestj.lib.net.https.Mode.REST,
+//                net.forestany.forestj.lib.net.sock.recv.ReceiveType.SOCKET
+//            )
+//
+//            // create https client task
+//            o_clientTask = net.forestany.forestj.lib.net.sock.task.send.https.TinyHttpsClient<javax.net.ssl.SSLSocket>(
+//                o_clientConfig
+//            )
+//
+//            // need this hack until we can set amountCyclesToleratingDelay to 0
+//            o_clientTask.receiveMaxUnknownAmountInMiB = GlobalInstance.get().syncReceiveMaxUnknownAmountInMiB
+//
+//            // create client socket instance
+//            val o_socketSend = net.forestany.forestj.lib.net.sock.send.SendTCP<javax.net.ssl.SSLSocket>(
+//                javax.net.ssl.SSLSocket::class.java,
+//                GlobalInstance.get().syncServerIp,
+//                GlobalInstance.get().syncServerPort,
+//                o_clientTask,
+//                30000,
+//                false,
+//                1,
+//                50,
+//                GlobalInstance.get().syncReceiveBufferSize,
+//                "127.0.0.1",
+//                0,
+//                sslContext
+//            )
+//
+//            // set sending socket instance for https client
+//            o_clientConfig.setSendingSocketInstanceForHttpClient(o_socketSend)
+//        } catch (e: Exception) {
+//            errorSnackbar(message = "Error: ${e.message ?: "Exception in onSyncClicked method."}", view = findViewById(android.R.id.content))
+//            return
+//        }
+//
+//        deactivateSearchModeWithoutRequery()
+//        showProgress()
+//
+//        // start synchronization thread
+//        Thread {
+//            try {
+//                // prepare json instances
+//                val o_json = net.forestany.forestj.lib.io.JSON(mutableListOf(jsonSmallSchema))
+//                val o_jsonRecord = net.forestany.forestj.lib.io.JSON(mutableListOf(jsonRecordSchema))
+//
+//                //region Step 1: send all data to server
+//                // create json media collection instance
+//                var o_jsonMediaCollection = JSONMediaCollectionSmall()
+//                o_jsonMediaCollection.Timestamp = java.time.LocalDateTime.now().withNano(0)
+//
+//                // get all language records
+//                val o_languageRecordInstance = LanguageRecord()
+//
+//                for (o_languageRecord in o_languageRecordInstance.getRecords(true)) {
+//                    o_jsonMediaCollection.Languages.add(o_languageRecord)
+//                }
+//
+//                // get all media collection records
+//                val o_mediaCollectionRecordSmallInstance = MediaCollectionRecordSmall()
+//                o_mediaCollectionRecordSmallInstance.Columns = listOf(
+//                    "Id",
+//                    "UUID",
+//                    "PublicationYear",
+//                    "OriginalTitle",
+//                    "LastModified",
+//                    "Deleted",
+//                    "Poster"
+//                )
+//
+//                for (o_mediaCollectionRecord in o_mediaCollectionRecordSmallInstance.getRecords(true)) {
+//                    // delete records with deleted timestamp older than 30 days
+//                    if ( (o_mediaCollectionRecord.ColumnDeleted != null) && (o_mediaCollectionRecord.ColumnDeleted.isBefore( java.time.LocalDateTime.now().withNano(0).minusDays(30) )) ) {
+//                        o_mediaCollectionRecord.deleteRecord()
+//                    } else {
+//                        // poster data not in json, decoding would take to much time, encapsulate just the amount of data
+//                        val posterData: String? = o_mediaCollectionRecord.ColumnPoster
+//
+//                        if ( posterData.isNullOrBlank() || (posterData.lowercase().contentEquals("null")) ) {
+//                            o_mediaCollectionRecord.ColumnPoster = "0"
+//                        } else {
+//                            o_mediaCollectionRecord.ColumnPoster = posterData.length.toString()
+//                        }
+//
+//                        o_jsonMediaCollection.Records.add(o_mediaCollectionRecord)
+//                    }
+//                }
+//
+//                // encode to json
+//                val s_jsonEncoded = o_json.jsonEncode(o_jsonMediaCollection)
+//
+//                // send json data to server
+//                o_clientTask.setRequest(
+//                    "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/all",
+//                    net.forestany.forestj.lib.net.http.RequestType.POST
+//                )
+//                o_clientTask.contentType = net.forestany.forestj.lib.net.http.PostType.HTML
+//                o_clientTask.addRequestParameter(s_jsonEncoded, "")
+//                o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+//                o_clientTask.authenticationPassword = authPassphrase
+//                runOnUiThread {
+//                    updateProgressText(0, 1, getString(R.string.main_sync_sending_record_overview))
+//                }
+//                o_clientTask.executeRequest()
+//
+//                if (o_clientTask.returnCode != 200) {
+//                    throw Exception(getString(R.string.main_sync_exception_post_all, o_clientTask.returnCode, o_clientTask.returnMessage))
+//                }
+//
+//                var cnt = 1
+//
+//                // validate response from sending json data to server
+//                try {
+//                    val serverResponsePostAll = cleanupResponse(o_clientTask.response)
+//
+//                    runOnUiThread {
+//                        updateProgressText(0, 1, getString(R.string.main_sync_sent_record_overview))
+//                    }
+//
+//                    // got list of record answers
+//                    if (!serverResponsePostAll.contentEquals("null")) {
+//                        // convert server response to list of record uuid
+//                        val serverResponses = serverResponsePostAll.split(net.forestany.forestj.lib.net.https.Config.HTTP_LINEBREAK)
+//
+//                        // if list is not empty
+//                        if (serverResponses.isNotEmpty()) {
+//                            // iterate each response line
+//                            for (response in serverResponses) {
+//                                runOnUiThread {
+//                                    updateProgressText(cnt++, serverResponses.size, getString(R.string.main_sync_sending_records))
+//                                }
+//
+//                                if (!response.contains(";")) {
+//                                    continue
+//                                }
+//
+//                                val responseCommands = response.split(";")
+//                                val command = responseCommands[1].lowercase()
+//
+//                                if ( (responseCommands[0].length == 36) && ((command.contentEquals("insert")) || (command.contentEquals("update")) || (command.contentEquals("updatewithposter"))) ) {
+//                                    // Insert || Update || UpdateWithPoster command
+//                                    val o_mediaCollectionRecordInstance = MediaCollectionRecord()
+//
+//                                    if (o_mediaCollectionRecordInstance.getOneRecord(mutableListOf("UUID"), mutableListOf(responseCommands[0]) as List<Any>?)) {
+//                                        val posterData: String? = o_mediaCollectionRecordInstance.ColumnPoster
+//
+//                                        if ( posterData.isNullOrBlank() || (posterData.lowercase().contentEquals("null")) ) {
+//                                            o_mediaCollectionRecordInstance.ColumnPoster = "0"
+//                                        } else {
+//                                            o_mediaCollectionRecordInstance.ColumnPoster = posterData.length.toString()
+//                                        }
+//
+//                                        // encode to json
+//                                        val s_jsonEncodedRecord = o_jsonRecord.jsonEncode(o_mediaCollectionRecordInstance)
+//
+//                                        if ((command.contentEquals("insert"))) {
+//                                            // post record data for insert
+//                                            o_clientTask.setRequest(
+//                                                "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/insert",
+//                                                net.forestany.forestj.lib.net.http.RequestType.POST
+//                                            )
+//                                            o_clientTask.contentType = net.forestany.forestj.lib.net.http.PostType.HTML
+//                                            o_clientTask.addRequestParameter(s_jsonEncodedRecord, "")
+//                                            o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+//                                            o_clientTask.authenticationPassword = authPassphrase
+//                                            o_clientTask.executeRequest()
+//                                        } else if ((command.contentEquals("update")) || (command.contentEquals("updatewithposter"))) {
+//                                            // post record data for update
+//                                            o_clientTask.setRequest(
+//                                                "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/update",
+//                                                net.forestany.forestj.lib.net.http.RequestType.POST
+//                                            )
+//                                            o_clientTask.contentType = net.forestany.forestj.lib.net.http.PostType.HTML
+//                                            o_clientTask.addRequestParameter(s_jsonEncodedRecord, "")
+//                                            o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+//                                            o_clientTask.authenticationPassword = authPassphrase
+//                                            o_clientTask.executeRequest()
+//                                        }
+//
+//                                        if (o_clientTask.returnCode == 200) {
+//                                            // validate response from posting data
+//                                            val serverResponseInsert = cleanupResponse(o_clientTask.response)
+//
+//                                            if (serverResponseInsert.contentEquals(o_mediaCollectionRecordInstance.ColumnUUID)) {
+//                                                // post successful
+//                                                if ((command.contentEquals("insert")) || (command.contentEquals("updatewithposter"))) {
+//                                                    // post poster data with uuid
+//                                                    o_clientTask.setRequest(
+//                                                        "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/poster",
+//                                                        net.forestany.forestj.lib.net.http.RequestType.POST
+//                                                    )
+//                                                    o_clientTask.contentType = net.forestany.forestj.lib.net.http.PostType.HTML
+//                                                    o_clientTask.addRequestParameter("uuid", o_mediaCollectionRecordInstance.ColumnUUID)
+//                                                    o_clientTask.addRequestParameter("posterdata", Util.compress(posterData ?: ""))
+//                                                    o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+//                                                    o_clientTask.authenticationPassword = authPassphrase
+//                                                    o_clientTask.executeRequest()
+//
+//                                                    if (o_clientTask.returnCode == 200) {
+//                                                        // validate response from posting poster data
+//                                                        val serverResponsePostPoster = cleanupResponse(o_clientTask.response)
+//
+//                                                        // response should be an integer
+//                                                        if (net.forestany.forestj.lib.Helper.isInteger(serverResponsePostPoster)) {
+//                                                            if (serverResponsePostPoster.toInt() != (posterData?.length ?: 0)) {
+//                                                                // post uncompressed poster data with uuid as another try
+//                                                                o_clientTask.setRequest(
+//                                                                    "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/poster",
+//                                                                    net.forestany.forestj.lib.net.http.RequestType.POST
+//                                                                )
+//                                                                o_clientTask.contentType = net.forestany.forestj.lib.net.http.PostType.HTML
+//                                                                o_clientTask.addRequestParameter("uuid", o_mediaCollectionRecordInstance.ColumnUUID)
+//                                                                o_clientTask.addRequestParameter("uncompressed", "true")
+//                                                                o_clientTask.addRequestParameter("posterdata", posterData)
+//                                                                o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+//                                                                o_clientTask.authenticationPassword = authPassphrase
+//                                                                o_clientTask.executeRequest()
+//
+//                                                                if (o_clientTask.returnCode == 200) {
+//                                                                    // validate response from posting poster data
+//                                                                    val serverResponsePostPosterUncompressed = cleanupResponse(o_clientTask.response)
+//
+//                                                                    // response should be an integer
+//                                                                    if (net.forestany.forestj.lib.Helper.isInteger(serverResponsePostPosterUncompressed)) {
+//                                                                        if (serverResponsePostPosterUncompressed.toInt() != (posterData?.length ?: 0)) {
+//                                                                            Log.e(TAG, "sent poster bytes not successful: received size on server '${serverResponsePostPosterUncompressed.toInt()}' does not match with local size '${(posterData?.length ?: 0)}'")
+//                                                                        }
+//                                                                    } else {
+//                                                                        Log.e(TAG, "server response for posting poster data is not an integer: '$serverResponsePostPosterUncompressed'")
+//                                                                    }
+//                                                                } else {
+//                                                                    Log.e(TAG, "request failed: ${o_clientTask.returnCode}|${o_clientTask.returnMessage}")
+//                                                                }
+//                                                            }
+//                                                        } else {
+//                                                            Log.e(TAG, "server response for posting poster data is not an integer: '$serverResponsePostPoster'")
+//                                                        }
+//                                                    } else {
+//                                                        Log.e(TAG, "request failed: ${o_clientTask.returnCode}|${o_clientTask.returnMessage}")
+//                                                    }
+//                                                }
+//                                            } else {
+//                                                Log.e(TAG, "insert or update post request was not successful; $serverResponseInsert != ${o_mediaCollectionRecordInstance.ColumnUUID}")
+//                                            }
+//                                        } else {
+//                                            Log.e(TAG, "request failed: ${o_clientTask.returnCode}|${o_clientTask.returnMessage}")
+//                                        }
+//                                    }
+//                                } else if ( (responseCommands[0].length == 36) && (command.contentEquals("delete")) && (responseCommands.size == 3) ) {
+//                                    // Delete command
+//                                    val o_mediaCollectionRecordInstance = MediaCollectionRecord()
+//
+//                                    if (o_mediaCollectionRecordInstance.getOneRecord(mutableListOf("UUID"), mutableListOf(responseCommands[0]) as List<Any>?)) {
+//                                        o_mediaCollectionRecordInstance.ColumnDeleted = net.forestany.forestj.lib.Helper.fromDateTimeString(responseCommands[2])
+//
+//                                        if (o_mediaCollectionRecordInstance.updateRecord(true) < 0) {
+//                                            Log.e(TAG, "setting deleted timestamp failed for '${o_mediaCollectionRecordInstance.ColumnOriginalTitle}'")
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                } catch (_: NullPointerException) {
+//                    // nothing to do if response hits a NullPointerException, go on to next step of synchronization
+//                    Log.e(TAG, "NullPointerException within synchronisation in step 1")
+//                }
+//                //endregion
+//
+//                //region Step 2: get record overview from server
+//                runOnUiThread {
+//                    updateProgressText(0, 1, getString(R.string.main_sync_receiving_record_overview))
+//                }
+//
+//                o_clientTask.setRequest(
+//                    "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/all",
+//                    net.forestany.forestj.lib.net.http.RequestType.GET
+//                )
+//                o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+//                o_clientTask.authenticationPassword = authPassphrase
+//                o_clientTask.executeRequest()
+//
+//                runOnUiThread {
+//                    updateProgressText(0, 1, getString(R.string.main_sync_received_record_overview))
+//                }
+//
+//                if (o_clientTask.returnCode != 200) {
+//                    throw Exception(getString(R.string.main_sync_exception_fetch_all, o_clientTask.returnCode, o_clientTask.returnMessage))
+//                }
+//
+//                runOnUiThread {
+//                    updateProgressText(0, 1, getString(R.string.main_sync_decoding_record_overview))
+//                }
+//
+//                // decode received json data
+//                val serverResponseGetAll = cleanupResponse(o_clientTask.response)
+//                o_jsonMediaCollection = o_json.jsonDecode(mutableListOf(serverResponseGetAll)) as JSONMediaCollectionSmall
+//
+//                runOnUiThread {
+//                    updateProgressText(0, 1, getString(R.string.main_sync_decoded_record_overview))
+//                }
+//
+//                // list for note to retrieve record data
+//                val getRequestList = mutableListOf<String>()
+//
+//                // iterate all received records
+//                if (o_jsonMediaCollection.Records.size > 0) {
+//                    val o_mediaCollectionRecordInstance = MediaCollectionRecord()
+//                    cnt = 1
+//
+//                    for (jsonMediaCollectionRecordSmall in o_jsonMediaCollection.Records) {
+//                        runOnUiThread {
+//                            updateProgressText(cnt++, o_jsonMediaCollection.Records.size, getString(R.string.main_sync_verify_received_records))
+//                        }
+//
+//                        if (o_mediaCollectionRecordInstance.getOneRecord(mutableListOf("UUID"), mutableListOf(jsonMediaCollectionRecordSmall.ColumnUUID) as List<Any>?)) {
+//                            val columnPosterLength = if (o_mediaCollectionRecordInstance.ColumnPoster == null) 0 else o_mediaCollectionRecordInstance.ColumnPoster.length
+//
+//                            if (
+//                                (jsonMediaCollectionRecordSmall.ColumnDeleted == null) && (o_mediaCollectionRecordInstance.ColumnDeleted == null) &&
+//                                (jsonMediaCollectionRecordSmall.ColumnLastModified.isAfter(o_mediaCollectionRecordInstance.ColumnLastModified))
+//                            ) {
+//                                // received record found, received deleted is null on both sides, and received record last modified timestamp is newer -> update all
+//
+//                                // note UUID with 'UpdateWithPoster' if amounts of poster bytes on both sides do not match, otherwise just 'Update' because received last modified timestamp is newer
+//                                if ((jsonMediaCollectionRecordSmall.ColumnPoster.toInt()) != columnPosterLength) {
+//                                    getRequestList.add(jsonMediaCollectionRecordSmall.ColumnUUID + ";" + "UpdateWithPoster")
+//                                } else {
+//                                    getRequestList.add(jsonMediaCollectionRecordSmall.ColumnUUID + ";" + "Update")
+//                                }
+//                            } else if ((jsonMediaCollectionRecordSmall.ColumnDeleted != null) && (!jsonMediaCollectionRecordSmall.ColumnDeleted.equals(o_mediaCollectionRecordInstance.ColumnDeleted))) {
+//                                // received record found, received deleted is not null and local is not equal to it -> only update deleted
+//                                o_mediaCollectionRecordInstance.ColumnDeleted = jsonMediaCollectionRecordSmall.ColumnDeleted
+//
+//                                // update record - received deleted is not null and local deleted is not equal to it
+//                                try {
+//                                    o_mediaCollectionRecordInstance.updateRecord(true)
+//                                } catch (o_exc: IllegalStateException) {
+//                                    // catch primary/unique violation and ignore it
+//                                    Log.e(TAG, "primary/unique violation updating record with delete timestamp: ${o_exc.message}")
+//                                }
+//                            } else if (
+//                                (jsonMediaCollectionRecordSmall.ColumnDeleted == null) && (o_mediaCollectionRecordInstance.ColumnDeleted == null) &&
+//                                ((jsonMediaCollectionRecordSmall.ColumnPoster.toInt()) != columnPosterLength)
+//                            ) {
+//                                Log.d(TAG, "overview verification: poster bytes length do not match for '${o_mediaCollectionRecordInstance.ColumnOriginalTitle}' -> server'${jsonMediaCollectionRecordSmall.ColumnPoster.toInt()}' != local'$columnPosterLength'")
+//
+//                                // note UUID with 'UpdateWithPoster' if amounts of poster bytes on both sides do not match
+//                                getRequestList.add(jsonMediaCollectionRecordSmall.ColumnUUID + ";" + "UpdateWithPoster")
+//                            }
+//                        } else {
+//                            if (jsonMediaCollectionRecordSmall.ColumnDeleted == null) {
+//                                // received record not found and deleted is null
+//                                try {
+//                                    // check with new record if record(s) already exists with OriginalTitle and PublicationYear
+//                                    val checkRecords = MediaCollectionRecord()
+//                                    checkRecords.Filters = mutableListOf(
+//                                        net.forestany.forestj.lib.sql.Filter("OriginalTitle", jsonMediaCollectionRecordSmall.ColumnOriginalTitle, "=", "AND"),
+//                                        net.forestany.forestj.lib.sql.Filter("PublicationYear", jsonMediaCollectionRecordSmall.ColumnPublicationYear, "=", "AND"),
+//                                        net.forestany.forestj.lib.sql.Filter("Deleted", null, "IS", "AND")
+//                                    )
+//
+//                                    // query for same record(s)
+//                                    val result = checkRecords.getRecords(true)
+//
+//                                    // we found record(s) which are identical and not deleted
+//                                    for (record in result) {
+//                                        record.ColumnDeleted = java.time.LocalDateTime.now().withNano(0)
+//
+//                                        // update record - duplicate can be set with deleted timestamp
+//                                        try {
+//                                            record.updateRecord(true)
+//                                        } catch (o_exc: IllegalStateException) {
+//                                            // catch primary/unique violation and ignore it
+//                                            Log.e(TAG, "primary/unique violation updating record with delete timestamp: ${o_exc.message}")
+//                                        }
+//                                    }
+//
+//                                    // note UUID with 'Insert'
+//                                    getRequestList.add(jsonMediaCollectionRecordSmall.ColumnUUID + ";" + "Insert")
+//                                } catch (o_exc: IllegalStateException) {
+//                                    // catch select exception and ignore it
+//                                    Log.e(TAG, "issue while searching for identical records: ${o_exc.message}")
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                //endregion
+//
+//                //region Step 3: request record if they are new or changes happened
+//                if (getRequestList.isNotEmpty()) {
+//                    cnt = 1
+//
+//                    // iterate each uuid entry
+//                    for (request in getRequestList) {
+//                        runOnUiThread {
+//                            updateProgressText(cnt++, getRequestList.size, getString(R.string.main_sync_request_records))
+//                        }
+//
+//                        if (!request.contains(";")) {
+//                            continue
+//                        }
+//
+//                        val requestCommands = request.split(";")
+//                        val command = requestCommands[1].lowercase()
+//
+//                        if ( (requestCommands[0].length == 36) && (command.contentEquals("insert")) ) {
+//                            // get record data from server for insert
+//                            o_clientTask.setRequest(
+//                                "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/record?uuid=${requestCommands[0]}",
+//                                net.forestany.forestj.lib.net.http.RequestType.GET
+//                            )
+//                            o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+//                            o_clientTask.authenticationPassword = authPassphrase
+//                            o_clientTask.executeRequest()
+//
+//                            if (o_clientTask.returnCode == 200) {
+//                                // decode received json data
+//                                val serverRequestGetRecord = cleanupResponse(o_clientTask.response)
+//                                val jsonMediaCollectionRecord = o_jsonRecord.jsonDecode(mutableListOf(serverRequestGetRecord)) as MediaCollectionRecord
+//
+//                                // insert record
+//                                if (jsonMediaCollectionRecord.insertRecord() < 1) {
+//                                    Log.w(TAG, "could not insert record '${jsonMediaCollectionRecord.ColumnOriginalTitle}'")
+//                                    continue
+//                                }
+//                            } else {
+//                                Log.e(TAG, "request failed: ${o_clientTask.returnCode}|${o_clientTask.returnMessage}")
+//                            }
+//                        } else if ( (requestCommands[0].length == 36) && ((command.contentEquals("update")) || (command.contentEquals("updatewithposter"))) ) {
+//                            val o_mediaCollectionRecordInstance = MediaCollectionRecord()
+//
+//                            // get local record
+//                            if (!o_mediaCollectionRecordInstance.getOneRecord(mutableListOf("UUID"), mutableListOf(requestCommands[0]) as List<Any>?)) {
+//                                Log.e(TAG, "could not find record with uuid '${requestCommands[0]}'")
+//                                continue
+//                            }
+//
+//                            // get record data from server for update
+//                            o_clientTask.setRequest(
+//                                "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/record?uuid=${requestCommands[0]}",
+//                                net.forestany.forestj.lib.net.http.RequestType.GET
+//                            )
+//                            o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+//                            o_clientTask.authenticationPassword = authPassphrase
+//                            o_clientTask.executeRequest()
+//
+//                            if (o_clientTask.returnCode == 200) {
+//                                // decode received json data
+//                                val serverRequestGetRecord = cleanupResponse(o_clientTask.response)
+//                                val jsonMediaCollectionRecord = o_jsonRecord.jsonDecode(mutableListOf(serverRequestGetRecord)) as MediaCollectionRecord
+//
+//                                o_mediaCollectionRecordInstance.ColumnUUID = jsonMediaCollectionRecord.ColumnUUID
+//                                o_mediaCollectionRecordInstance.ColumnTitle = jsonMediaCollectionRecord.ColumnTitle
+//                                o_mediaCollectionRecordInstance.ColumnType = jsonMediaCollectionRecord.ColumnType
+//                                o_mediaCollectionRecordInstance.ColumnPublicationYear = jsonMediaCollectionRecord.ColumnPublicationYear
+//                                o_mediaCollectionRecordInstance.ColumnOriginalTitle = jsonMediaCollectionRecord.ColumnOriginalTitle
+//                                o_mediaCollectionRecordInstance.ColumnSubType = jsonMediaCollectionRecord.ColumnSubType
+//                                o_mediaCollectionRecordInstance.ColumnFiledUnder = jsonMediaCollectionRecord.ColumnFiledUnder
+//                                o_mediaCollectionRecordInstance.ColumnLastSeen = jsonMediaCollectionRecord.ColumnLastSeen
+//                                o_mediaCollectionRecordInstance.ColumnLengthInMinutes = jsonMediaCollectionRecord.ColumnLengthInMinutes
+//                                o_mediaCollectionRecordInstance.ColumnLanguages = jsonMediaCollectionRecord.ColumnLanguages
+//                                o_mediaCollectionRecordInstance.ColumnSubtitles = jsonMediaCollectionRecord.ColumnSubtitles
+//                                o_mediaCollectionRecordInstance.ColumnDirectors = jsonMediaCollectionRecord.ColumnDirectors
+//                                o_mediaCollectionRecordInstance.ColumnScreenwriters = jsonMediaCollectionRecord.ColumnScreenwriters
+//                                o_mediaCollectionRecordInstance.ColumnCast = jsonMediaCollectionRecord.ColumnCast
+//                                o_mediaCollectionRecordInstance.ColumnSpecialFeatures = jsonMediaCollectionRecord.ColumnSpecialFeatures
+//                                o_mediaCollectionRecordInstance.ColumnOther = jsonMediaCollectionRecord.ColumnOther
+//                                o_mediaCollectionRecordInstance.ColumnLastModified = jsonMediaCollectionRecord.ColumnLastModified
+//
+//                                // clear poster data if we want to update record with poster
+//                                if (command.contentEquals("updatewithposter")) {
+//                                    o_mediaCollectionRecordInstance.ColumnPoster = null
+//                                }
+//
+//                                // update record
+//                                try {
+//                                    if (o_mediaCollectionRecordInstance.updateRecord(true) < 0) {
+//                                        Log.w(TAG, "could not update record '${o_mediaCollectionRecordInstance.ColumnOriginalTitle}'")
+//                                        continue
+//                                    }
+//                                } catch (o_exc: IllegalStateException) {
+//                                    // catch primary/unique violation and ignore it
+//                                    Log.e(TAG, "primary/unique violation updating record: ${o_exc.message}")
+//                                }
+//                            } else {
+//                                Log.e(TAG, "request failed: ${o_clientTask.returnCode}|${o_clientTask.returnMessage}")
+//                            }
+//                        }
+//
+//                        // get or update poster from server if command is 'Insert' or 'UpdateWithPoster'
+//                        if ( (requestCommands[0].length == 36) && ((command.contentEquals("insert")) || (command.contentEquals("updatewithposter"))) ) {
+//                            // get poster data from server
+//                            o_clientTask.setRequest(
+//                                "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/poster?uuid=${requestCommands[0]}",
+//                                net.forestany.forestj.lib.net.http.RequestType.GET
+//                            )
+//                            o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+//                            o_clientTask.authenticationPassword = authPassphrase
+//                            o_clientTask.executeRequest()
+//
+//                            if (o_clientTask.returnCode == 200) {
+//                                // get poster bytes from response
+//                                var serverResponseGetPoster: String? = cleanupResponse(o_clientTask.response)
+//
+//                                // check for 'null' in case that server side has no poster stored
+//                                serverResponseGetPoster = if ((serverResponseGetPoster?.length == 4) && (serverResponseGetPoster.lowercase().contentEquals("null"))) {
+//                                    null
+//                                } else {
+//                                    try {
+//                                        Util.decompress(serverResponseGetPoster)
+//                                    } catch (exc: Exception) {
+//                                        Log.e(TAG, "decompress failed for '${requestCommands[0]}'")
+//                                        null
+//                                    }
+//                                }
+//
+//                                // get media collection record with uuid entry
+//                                var o_mediaCollectionRecordInstance = MediaCollectionRecord()
+//
+//                                if (o_mediaCollectionRecordInstance.getOneRecord(mutableListOf("UUID"), mutableListOf(requestCommands[0]) as List<Any>?)) {
+//                                    // update poster data
+//                                    o_mediaCollectionRecordInstance.ColumnPoster = serverResponseGetPoster
+//
+//                                    if (o_mediaCollectionRecordInstance.updateRecord() < 0) {
+//                                        Log.w(TAG, "could not update record with new poster data '${o_mediaCollectionRecordInstance.ColumnOriginalTitle}'")
+//                                    }
+//                                }
+//
+//                                // get poster bytes length to check if we received all bytes
+//                                o_clientTask.setRequest(
+//                                    "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/posterbyteslength?uuid=${requestCommands[0]}",
+//                                    net.forestany.forestj.lib.net.http.RequestType.GET
+//                                )
+//                                o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+//                                o_clientTask.authenticationPassword = authPassphrase
+//                                o_clientTask.executeRequest()
+//
+//                                if (o_clientTask.returnCode == 200) {
+//                                    // validate response from get poster bytes length
+//                                    val serverResponseGetPosterLength = cleanupResponse(o_clientTask.response)
+//                                    val localPosterLength = if (o_mediaCollectionRecordInstance.ColumnPoster == null) 0 else o_mediaCollectionRecordInstance.ColumnPoster.length
+//
+//                                    // response should be an integer
+//                                    if (net.forestany.forestj.lib.Helper.isInteger(serverResponseGetPosterLength)) {
+//                                        if (serverResponseGetPosterLength.toInt() != localPosterLength) {
+//                                            Log.w(TAG, "verify poster data: poster bytes length do not match for '${o_mediaCollectionRecordInstance.ColumnOriginalTitle}' -> server'${serverResponseGetPosterLength.toInt()}' != local'$localPosterLength'")
+//
+//                                            // get uncompressed poster data from server as another try
+//                                            o_clientTask.setRequest(
+//                                                "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/poster?uuid=${requestCommands[0]}&uncompressed=true",
+//                                                net.forestany.forestj.lib.net.http.RequestType.GET
+//                                            )
+//                                            o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+//                                            o_clientTask.authenticationPassword = authPassphrase
+//                                            o_clientTask.executeRequest()
+//
+//                                            if (o_clientTask.returnCode == 200) {
+//                                                // get poster bytes from response
+//                                                var serverResponseGetPosterUncompressed: String? = cleanupResponse(o_clientTask.response)
+//
+//                                                // check for 'null' in case that server side has no poster stored
+//                                                if ((serverResponseGetPosterUncompressed?.length == 4) && (serverResponseGetPosterUncompressed.lowercase().contentEquals("null"))) {
+//                                                    serverResponseGetPosterUncompressed = null
+//                                                }
+//
+//                                                // get media collection record with uuid entry
+//                                                o_mediaCollectionRecordInstance = MediaCollectionRecord()
+//
+//                                                if (o_mediaCollectionRecordInstance.getOneRecord(mutableListOf("UUID"), mutableListOf(requestCommands[0]) as List<Any>?)) {
+//                                                    // update poster data
+//                                                    o_mediaCollectionRecordInstance.ColumnPoster = serverResponseGetPosterUncompressed
+//
+//                                                    if (o_mediaCollectionRecordInstance.updateRecord() < 0) {
+//                                                        Log.w(TAG, "could not update record with new poster data '${o_mediaCollectionRecordInstance.ColumnOriginalTitle}'")
+//                                                    }
+//                                                }
+//                                            } else {
+//                                                Log.e(TAG, "request failed: ${o_clientTask.returnCode}|${o_clientTask.returnMessage}")
+//                                            }
+//                                        }
+//                                    } else {
+//                                        Log.e(TAG, "server response for request poster data length is not an integer: '$serverResponseGetPosterLength'")
+//                                    }
+//                                } else {
+//                                    Log.e(TAG, "request failed: ${o_clientTask.returnCode}|${o_clientTask.returnMessage}")
+//                                }
+//                            } else {
+//                                Log.e(TAG, "request failed: ${o_clientTask.returnCode}|${o_clientTask.returnMessage}")
+//                            }
+//                        }
+//                    }
+//                }
+//                //endregion
+//
+//                runOnUiThread {
+//                    notifySnackbar(message = getString(R.string.main_sync_finished), view = findViewById(android.R.id.content))
+//                }
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//                runOnUiThread {
+//                    errorSnackbar(message = "Error: ${e.message ?: "Exception in onSyncClicked method."}", view = findViewById(android.R.id.content))
+//                }
+//            } finally {
+//                runOnUiThread {
+//                    hideProgress()
+//                    refresh()
+//                }
+//            }
+//        }.start()
+//    }*/
+
+/*//    private fun reloadPosterFromServer(s_uuid: String) {
+//        var sslContext: javax.net.ssl.SSLContext? = null
+//        lateinit var authPassphrase: String
+//        lateinit var o_clientTask: net.forestany.forestj.lib.net.sock.task.send.https.TinyHttpsClient<javax.net.ssl.SSLSocket>
+//
+//        // create sslContext, socket task and socket instance
+//        try {
+//            // encrypt authentication password
+//            val o_cryptography = net.forestany.forestj.lib.Cryptography(GlobalInstance.get().syncCommonPassphrase, net.forestany.forestj.lib.Cryptography.KEY256BIT)
+//            val a_encrypted = o_cryptography.encrypt(GlobalInstance.get().syncAuthPassphrase?.toByteArray(java.nio.charset.StandardCharsets.UTF_8) ?: throw Exception(getString(R.string.main_sync_auth_passphrase_missing)))
+//            authPassphrase = String(java.util.Base64.getEncoder().encode(a_encrypted), java.nio.charset.StandardCharsets.UTF_8)
+//
+//            if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".p12")) {
+//                // use .p12 truststore
+//                try {
+//                    sslContext = createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".p12", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
+//                } catch (e: Exception) {
+//                    e.printStackTrace()
+//
+//                    if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks")) {
+//                        // .p12 truststore did not work, use .bks truststore
+//                        sslContext = try {
+//                            createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
+//                        } catch (e: Exception) {
+//                            e.printStackTrace()
+//                            null
+//                        }
+//                    }
+//                }
+//            } else if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks")) {
+//                // use .bks truststore
+//                sslContext = try {
+//                    createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
+//                } catch (e: Exception) {
+//                    e.printStackTrace()
+//                    null
+//                }
+//            }
+//
+//            // create https config class
+//            val o_clientConfig = net.forestany.forestj.lib.net.https.Config(
+//                "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}",
+//                net.forestany.forestj.lib.net.https.Mode.REST,
+//                net.forestany.forestj.lib.net.sock.recv.ReceiveType.SOCKET
+//            )
+//
+//            // create https client task
+//            o_clientTask = net.forestany.forestj.lib.net.sock.task.send.https.TinyHttpsClient<javax.net.ssl.SSLSocket>(
+//                o_clientConfig
+//            )
+//
+//            // need this hack until we can set amountCyclesToleratingDelay to 0
+//            o_clientTask.receiveMaxUnknownAmountInMiB = GlobalInstance.get().syncReceiveMaxUnknownAmountInMiB
+//
+//            // create client socket instance
+//            val o_socketSend = net.forestany.forestj.lib.net.sock.send.SendTCP<javax.net.ssl.SSLSocket>(
+//                javax.net.ssl.SSLSocket::class.java,
+//                GlobalInstance.get().syncServerIp,
+//                GlobalInstance.get().syncServerPort,
+//                o_clientTask,
+//                30000,
+//                false,
+//                1,
+//                50,
+//                GlobalInstance.get().syncReceiveBufferSize,
+//                "127.0.0.1",
+//                0,
+//                sslContext
+//            )
+//
+//            // set sending socket instance for https client
+//            o_clientConfig.setSendingSocketInstanceForHttpClient(o_socketSend)
+//        } catch (e: Exception) {
+//            errorSnackbar(message = "Error: ${e.message ?: "Exception in reloadPosterFromServer method."}", view = findViewById(android.R.id.content))
+//            return
+//        }
+//
+//        deactivateSearchModeWithoutRequery()
+//        showProgress()
+//
+//        Thread {
+//            try {
+//                // get all media collection records
+//                val o_mediaCollectionRecordInstance = MediaCollectionRecord()
+//
+//                // any changes (insert/update) happens?
+//                if (o_mediaCollectionRecordInstance.getRecord(mutableListOf<Any?>(s_uuid))) {
+////                    // try multiple times to get poster data from server, in case of connection issues
+////                    for (tries in 0..2) {
+//                        // get poster data from server
+//                        o_clientTask.setRequest(
+//                            "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/poster?uuid=$s_uuid",
+//                            net.forestany.forestj.lib.net.http.RequestType.GET
+//                        )
+//                        o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+//                        o_clientTask.authenticationPassword = authPassphrase
+//                        o_clientTask.executeRequest()
+//
+//                        if (o_clientTask.returnCode != 200) {
+//                            // get poster data failed, try again
+////                            continue
+//                        }
+//
+//                        // get poster bytes from response
+//                        val serverResponseGetPoster = o_clientTask.response//cleanupResponse(o_clientTask.response)
+//
+//                        // clear poster data
+//                        o_mediaCollectionRecordInstance.ColumnPoster = null
+//                        o_mediaCollectionRecordInstance.updateRecord()
+//
+//                        // update poster data
+//                        //o_mediaCollectionRecordInstance.ColumnPoster = serverResponseGetPoster
+//                        //o_mediaCollectionRecordInstance.updateRecord()
+//
+//                        // get poster bytes length to check if we received all bytes
+//                        o_clientTask.setRequest(
+//                            "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/posterbyteslength?uuid=$s_uuid",
+//                            net.forestany.forestj.lib.net.http.RequestType.GET
+//                        )
+//                        o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
+//                        o_clientTask.authenticationPassword = authPassphrase
+//                        o_clientTask.executeRequest()
+//
+//                        if (o_clientTask.returnCode != 200) {
+//                            // get poster bytes length failed, try again
+////                            continue
+//                        }
+//
+//                        // validate response from get poster bytes length
+//                        val serverResponseGetPosterLength = cleanupResponse(o_clientTask.response)
+//
+//                        // response should be an integer
+//                        if (!net.forestany.forestj.lib.Helper.isInteger(serverResponseGetPosterLength)) {
+//                            // get poster bytes length failed, response is not an integer
+////                            continue
+//                        }
+//
+//                        if (serverResponseGetPosterLength.toInt() == o_mediaCollectionRecordInstance.ColumnPoster.length) {
+//                            // get poster data successful, received bytes equal local bytes of poster data
+////                            break
+//                        } else {
+//                            Log.e(TAG, "poster bytes length do not match for '${o_mediaCollectionRecordInstance.ColumnOriginalTitle}' -> '${serverResponseGetPosterLength.toInt()}' != '${o_mediaCollectionRecordInstance.ColumnPoster.length}'")
+//                            // get poster data failed, amount of bytes on both sides are not equal
+////                            Thread.sleep(2000)
+//                        }
+////                    }
+//                }
+//                runOnUiThread {
+//                    notifySnackbar(message = getString(R.string.main_sync_finished), view = findViewById(android.R.id.content))
+//                }
+//            } catch (e: Exception) {
+//                runOnUiThread {
+//                    errorSnackbar(message = "Error: ${e.message ?: "Exception in reloadPosterFromServer method."}", view = findViewById(android.R.id.content))
+//                }
+//            } finally {
+//                runOnUiThread {
+//                    hideProgress()
+//                    refresh()
+//                }
+//            }
+//        }.start()
+//    }*/
+
+/*//    private fun createMergedTrustManagerSSLContextInstance(pathToTruststore: String, truststorePassword: String): javax.net.ssl.SSLContext {
+//        // load default android ca truststore
+//        val defaultTrustStore = java.security.KeyStore.getInstance("AndroidCAStore").apply {
+//            load(null)
+//        }
+//
+//        // load own BKS truststore
+//        val customTrustStore = java.security.KeyStore.getInstance("BKS").apply {
+//            java.io.FileInputStream(java.io.File(pathToTruststore)).use { input ->
+//                load(input, truststorePassword.toCharArray())
+//            }
+//        }
+//
+//        // create merged truststore
+//        val mergedTrustStore = java.security.KeyStore.getInstance(java.security.KeyStore.getDefaultType()).apply {
+//            load(null)
+//
+//            // copy from default android ca truststore
+//            defaultTrustStore.aliases().iterator().forEach { alias ->
+//                setCertificateEntry("system-$alias", defaultTrustStore.getCertificate(alias))
+//            }
+//
+//            // copy from own BKS truststore
+//            customTrustStore.aliases().iterator().forEach { alias ->
+//                setCertificateEntry("custom-$alias", customTrustStore.getCertificate(alias))
+//            }
+//        }
+//
+//        // create TrustManagerFactory with merged truststore
+//        val tmf = javax.net.ssl.TrustManagerFactory.getInstance(javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm()).apply {
+//            init(mergedTrustStore)
+//        }
+//
+//        // create SSLContext with TLS 1.3
+//        return javax.net.ssl.SSLContext.getInstance("TLSv1.3").apply {
+//            init(null, tmf.trustManagers, java.security.SecureRandom())
+//        }
+//    }*/
+
+/*//    private fun cleanupResponse(content: String?): String {
+//        // need this hack until we can set amountCyclesToleratingDelay to 0
+//        if (content == null) {
+//            return "null"
+//        }
+//
+//        var s_foo = content.trimEnd('\u0000')
+//
+//        if (s_foo.indexOf("HTTP/1.1 ") > 0) {
+//            s_foo = s_foo.substring(0, s_foo.indexOf("HTTP/1.1 "))
+//        }
+//
+//        return s_foo
+//    }*/
+
+    private fun onStatisticClicked() {
         deactivateSearchModeWithoutRequery()
         showProgress()
 
-        // start synchronization thread
         Thread {
             try {
-                // Step 1: send all data to server
-                // create json mediacollection instance
-                var o_jsonMediaCollection = JSONMediaCollection()
-                o_jsonMediaCollection.Timestamp = java.time.LocalDateTime.now().withNano(0)
+                var totalItems = 0
+                var totalMovieItems = 0
+                var totalMovieBlurayItems = 0
+                var totalMovieDVDItems = 0
+                var totalMovie4KItems = 0
+                var totalSeriesItems = 0
+                var totalSeriesBlurayItems = 0
+                var totalSeriesDVDItems = 0
+                var totalSeries4KItems = 0
 
-                // get all language records
-                val o_languageRecordInstance = LanguageRecord()
-
-                for (o_languageRecord in o_languageRecordInstance.getRecords(true)) {
-                    o_jsonMediaCollection.Languages.add(o_languageRecord)
-                }
-
-                // get all mediacollection records
+                // get all media collection records
                 val o_mediaCollectionRecordInstance = MediaCollectionRecord()
 
                 for (o_mediaCollectionRecord in o_mediaCollectionRecordInstance.getRecords(true)) {
-                    // delete records with deleted timestamp older than 30 days
-                    if ( (o_mediaCollectionRecord.ColumnDeleted != null) && (o_mediaCollectionRecord.ColumnDeleted.isBefore( java.time.LocalDateTime.now().withNano(0).minusDays(30) )) ) {
-                        o_mediaCollectionRecord.deleteRecord()
-                    } else {
-                        // poster data not in json, decoding would take to much time
-                        o_mediaCollectionRecord.ColumnPoster = null
-                        o_jsonMediaCollection.Records.add(o_mediaCollectionRecord)
+                    // skip deleted records
+                    if (o_mediaCollectionRecord.ColumnDeleted != null) {
+                        continue
+                    }
+
+                    if (o_mediaCollectionRecord.ColumnType!!.contentEquals("Movie")) {
+                        totalItems++
+                        totalMovieItems++
+
+                        if (o_mediaCollectionRecord.ColumnSubType.contains("bluray")) {
+                            totalMovieBlurayItems++
+                        }
+
+                        if (o_mediaCollectionRecord.ColumnSubType.contains("dvd")) {
+                            totalMovieDVDItems++
+                        }
+
+                        if (o_mediaCollectionRecord.ColumnSubType.contains("4k")) {
+                            totalMovie4KItems++
+                        }
+                    } else if (o_mediaCollectionRecord.ColumnType!!.contentEquals("Series")) {
+                        totalItems++
+                        totalSeriesItems++
+
+                        if (o_mediaCollectionRecord.ColumnSubType.contains("bluray")) {
+                            totalSeriesBlurayItems++
+                        }
+
+                        if (o_mediaCollectionRecord.ColumnSubType.contains("dvd")) {
+                            totalSeriesDVDItems++
+                        }
+
+                        if (o_mediaCollectionRecord.ColumnSubType.contains("4k")) {
+                            totalSeries4KItems++
+                        }
                     }
                 }
 
-                // encode to json
-                val o_json = net.forestany.forestj.lib.io.JSON(mutableListOf(jsonSchema))
-                val s_jsonEncodedList = o_json.jsonEncode(o_jsonMediaCollection)
-
-                // send json data to server
-                o_clientTask.setRequest(
-                    "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/all",
-                    net.forestany.forestj.lib.net.http.RequestType.POST
+                val message = """
+                    |%-15s %5d
+                    |
+                    |%-15s %5d
+                    |%-23s %5d
+                    |%-23s %5d
+                    |%-23s %5d
+                    |
+                    |%-15s %5d
+                    |%-23s %5d
+                    |%-23s %5d
+                    |%-23s %5d
+                """.trimMargin().format(
+                    "Total Items:", totalItems,
+                    "Movie Items:", totalMovieItems,
+                    "    Bluray check marks:", totalMovieBlurayItems,
+                    "    DVD check marks:", totalMovieDVDItems,
+                    "    4K check marks:", totalMovie4KItems,
+                    "Series Items:", totalSeriesItems,
+                    "    Bluray check marks:", totalSeriesBlurayItems,
+                    "    DVD check marks:", totalSeriesDVDItems,
+                    "    4K check marks:", totalSeries4KItems
                 )
-                o_clientTask.contentType = net.forestany.forestj.lib.net.http.PostType.HTML
-                o_clientTask.addRequestParameter(s_jsonEncodedList, "")
-                o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
-                o_clientTask.authenticationPassword = authPassphrase
-                o_clientTask.executeRequest()
 
-                if (o_clientTask.returnCode != 200) {
-                    throw Exception(getString(R.string.main_sync_exception_post_all, o_clientTask.returnCode, o_clientTask.returnMessage))
-                }
-
-                // validate response from sending json data to server
-                try {
-                    val serverResponsePostAll = cleanupResponse(o_clientTask.response)
-
-                    // got list of record uuid
-                    if (!serverResponsePostAll.contentEquals("null")) {
-                        // convert server response to list of record uuid
-                        val uuidsForPoster = serverResponsePostAll.split(net.forestany.forestj.lib.net.https.Config.HTTP_LINEBREAK)
-
-                        // if list is not empty
-                        if (uuidsForPoster.isNotEmpty()) {
-                            var cnt = 1
-
-                            // iterate each response line
-                            for (s_uuid in uuidsForPoster) {
-                                runOnUiThread {
-                                    updateProgressText(cnt, uuidsForPoster.size)
-                                }
-
-                                if ((s_uuid.length != 36) && (s_uuid.length > 36) && (net.forestany.forestj.lib.Helper.isDateTime(s_uuid.substring(36)))) {
-                                    // received uuid and deleted timestamp
-                                    if (o_mediaCollectionRecordInstance.getOneRecord(mutableListOf("UUID"), mutableListOf(s_uuid.substring(0, 36)) as List<Any>?)) {
-                                        o_mediaCollectionRecordInstance.ColumnDeleted = net.forestany.forestj.lib.Helper.fromDateTimeString(s_uuid.substring(36))
-
-                                        if (o_mediaCollectionRecordInstance.updateRecord(true) < 0) {
-                                            errorSnackbar(message = getString(R.string.main_sync_exception_update_deleted, o_mediaCollectionRecordInstance.ColumnTitle), view = findViewById(android.R.id.content))
-                                        }
-                                    }
-                                } else if (o_mediaCollectionRecordInstance.getOneRecord(mutableListOf("UUID"), mutableListOf(s_uuid) as List<Any>?)) {
-                                    // received uuid, try multiple times to post poster data to server, in case of connection issues
-                                    for (tries in 0..2) {
-                                        // post poster data with uuid
-                                        o_clientTask.setRequest(
-                                            "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/poster",
-                                            net.forestany.forestj.lib.net.http.RequestType.POST
-                                        )
-                                        o_clientTask.contentType = net.forestany.forestj.lib.net.http.PostType.HTML
-                                        o_clientTask.addRequestParameter("uuid", s_uuid)
-                                        o_clientTask.addRequestParameter("posterdata", o_mediaCollectionRecordInstance.ColumnPoster)
-                                        o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
-                                        o_clientTask.authenticationPassword = authPassphrase
-                                        o_clientTask.executeRequest()
-
-                                        if (o_clientTask.returnCode != 200) {
-                                            // post poster data failed, try again
-                                            continue
-                                        }
-
-                                        // validate response from posting poster data
-                                        val serverResponsePostPoster = cleanupResponse(o_clientTask.response)
-
-                                        // response should be an integer
-                                        if (!net.forestany.forestj.lib.Helper.isInteger(serverResponsePostPoster)) {
-                                            // post poster data failed, response is not an integer
-                                            continue
-                                        }
-
-                                        if (serverResponsePostPoster.toInt() == o_mediaCollectionRecordInstance.ColumnPoster.length) {
-                                            // post poster data successful, received bytes equal local bytes of poster data
-                                            break
-                                        } else {
-                                            // post poster data failed, amount of bytes on both sides are not equal
-                                            Thread.sleep(2000)
-                                        }
-                                    }
-                                }
-
-                                cnt++
-                            }
-                        }
-                    }
-                } catch (_: NullPointerException) {
-                    // nothing to do if response hits a NullPointerException, go on to next step of synchronization
-                }
-
-                // Step 2: get all data from server
-                o_clientTask.setRequest(
-                    "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/all",
-                    net.forestany.forestj.lib.net.http.RequestType.GET
-                )
-                o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
-                o_clientTask.authenticationPassword = authPassphrase
-                o_clientTask.executeRequest()
-
-                if (o_clientTask.returnCode != 200) {
-                    throw Exception(getString(R.string.main_sync_exception_fetch_all, o_clientTask.returnCode, o_clientTask.returnMessage))
-                }
-
-                // decode received json data
-                val serverResponseGetAll = cleanupResponse(o_clientTask.response)
-                o_jsonMediaCollection = o_json.jsonDecode(mutableListOf(serverResponseGetAll)) as JSONMediaCollection
-
-                // uuid list for getting poster data
-                val a_uuidList = mutableListOf<String>()
-
-                // iterate all received records
-                if (o_jsonMediaCollection.Records.size > 0) {
-                    for (jsonMediaCollectionRecord in o_jsonMediaCollection.Records) {
-                        if (o_mediaCollectionRecordInstance.getOneRecord(mutableListOf("UUID"), mutableListOf(jsonMediaCollectionRecord.ColumnUUID) as List<Any>?)) {
-                            if (
-                                (jsonMediaCollectionRecord.ColumnDeleted == null) && (o_mediaCollectionRecordInstance.ColumnDeleted == null) &&
-                                (jsonMediaCollectionRecord.ColumnLastModified.isAfter(o_mediaCollectionRecordInstance.ColumnLastModified))
-                            ) {
-                                // received record found, received deleted is null on both sides, and received record last modified timestamp is newer -> update all
-                                o_mediaCollectionRecordInstance.ColumnUUID = jsonMediaCollectionRecord.ColumnUUID
-                                o_mediaCollectionRecordInstance.ColumnTitle = jsonMediaCollectionRecord.ColumnTitle
-                                o_mediaCollectionRecordInstance.ColumnType = jsonMediaCollectionRecord.ColumnType
-                                o_mediaCollectionRecordInstance.ColumnPublicationYear = jsonMediaCollectionRecord.ColumnPublicationYear
-                                o_mediaCollectionRecordInstance.ColumnOriginalTitle = jsonMediaCollectionRecord.ColumnOriginalTitle
-                                o_mediaCollectionRecordInstance.ColumnSubType = jsonMediaCollectionRecord.ColumnSubType
-                                o_mediaCollectionRecordInstance.ColumnFiledUnder = jsonMediaCollectionRecord.ColumnFiledUnder
-                                o_mediaCollectionRecordInstance.ColumnLastSeen = jsonMediaCollectionRecord.ColumnLastSeen
-                                o_mediaCollectionRecordInstance.ColumnLengthInMinutes = jsonMediaCollectionRecord.ColumnLengthInMinutes
-                                o_mediaCollectionRecordInstance.ColumnLanguages = jsonMediaCollectionRecord.ColumnLanguages
-                                o_mediaCollectionRecordInstance.ColumnSubtitles = jsonMediaCollectionRecord.ColumnSubtitles
-                                o_mediaCollectionRecordInstance.ColumnDirectors = jsonMediaCollectionRecord.ColumnDirectors
-                                o_mediaCollectionRecordInstance.ColumnScreenwriters = jsonMediaCollectionRecord.ColumnScreenwriters
-                                o_mediaCollectionRecordInstance.ColumnCast = jsonMediaCollectionRecord.ColumnCast
-                                o_mediaCollectionRecordInstance.ColumnSpecialFeatures = jsonMediaCollectionRecord.ColumnSpecialFeatures
-                                o_mediaCollectionRecordInstance.ColumnOther = jsonMediaCollectionRecord.ColumnOther
-                                o_mediaCollectionRecordInstance.ColumnLastModified = jsonMediaCollectionRecord.ColumnLastModified
-
-                                // update record - deleted is null on both sides, and received record last modified timestamp is newer
-                                try {
-                                    if (o_mediaCollectionRecordInstance.updateRecord(true) >= 0) {
-                                        a_uuidList.add(o_mediaCollectionRecordInstance.ColumnUUID)
-                                    }
-                                } catch (o_exc: IllegalStateException) {
-                                    // catch primary/unique violation and ignore it
-                                }
-                            } else if ((jsonMediaCollectionRecord.ColumnDeleted != null) && (!jsonMediaCollectionRecord.ColumnDeleted.equals(o_mediaCollectionRecordInstance.ColumnDeleted))) {
-                                // received record found, received deleted is not null and local is not equal to it -> only update deleted
-                                o_mediaCollectionRecordInstance.ColumnDeleted = jsonMediaCollectionRecord.ColumnDeleted
-
-                                // update record - received deleted is not null and local deleted is not equal to it
-                                try {
-                                    o_mediaCollectionRecordInstance.updateRecord(true)
-                                } catch (o_exc: IllegalStateException) {
-                                    // catch primary/unique violation and ignore it
-                                }
-                            } else if (
-                                (jsonMediaCollectionRecord.ColumnDeleted == null) && (o_mediaCollectionRecordInstance.ColumnDeleted == null) &&
-                                (jsonMediaCollectionRecord.ColumnPoster.toInt() != o_mediaCollectionRecordInstance.ColumnPoster.length)
-                            ) {
-                                // received record found, both sides not deleted and it is not different by last modified timestamp, but poster data does not match
-
-                                // save uuid to get poster data later
-                                a_uuidList.add(jsonMediaCollectionRecord.ColumnUUID)
-                            }
-                        } else {
-                            if (jsonMediaCollectionRecord.ColumnDeleted == null) {
-                                // received record not found and deleted is null
-                                try {
-                                    // check with new record if record(s) already exists with OriginalTitle and PublicationYear
-                                    val checkRecords = MediaCollectionRecord()
-                                    checkRecords.Filters = mutableListOf(
-                                        net.forestany.forestj.lib.sql.Filter("OriginalTitle", jsonMediaCollectionRecord.ColumnOriginalTitle, "=", "AND"),
-                                        net.forestany.forestj.lib.sql.Filter("PublicationYear", jsonMediaCollectionRecord.ColumnPublicationYear, "=", "AND"),
-                                        net.forestany.forestj.lib.sql.Filter("Deleted", null, "IS", "AND")
-                                    )
-
-                                    // query for same record(s)
-                                    val result = checkRecords.getRecords(true)
-
-                                    // we found record(s) which are identical and not deleted
-                                    for (record in result) {
-                                        record.ColumnDeleted = java.time.LocalDateTime.now().withNano(0)
-
-                                        // update record - duplicate can be set with deleted timestamp
-                                        try {
-                                            record.updateRecord(true)
-                                        } catch (o_exc: IllegalStateException) {
-                                            // catch primary/unique violation and ignore it
-                                        }
-                                    }
-
-                                    // insert record and save uuid to get poster data later
-                                    if (jsonMediaCollectionRecord.insertRecord() > 0) {
-                                        a_uuidList.add(jsonMediaCollectionRecord.ColumnUUID)
-                                    }
-                                } catch (o_exc: IllegalStateException) {
-                                    // catch primary/unique violation and ignore it
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // any changes (insert/update) happens?
-                if (a_uuidList.isNotEmpty()) {
-                    var cnt = 1
-
-                    // iterate each uuid entry
-                    for (s_uuid in a_uuidList) {
-                        runOnUiThread {
-                            updateProgressText(cnt, a_uuidList.size)
-                        }
-
-                        // try multiple times to get poster data from server, in case of connection issues
-                        for (tries in 0..2) {
-                            // get poster data from server
-                            o_clientTask.setRequest(
-                                "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/poster?uuid=$s_uuid",
-                                net.forestany.forestj.lib.net.http.RequestType.GET
-                            )
-                            o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
-                            o_clientTask.authenticationPassword = authPassphrase
-                            o_clientTask.executeRequest()
-
-                            if (o_clientTask.returnCode != 200) {
-                                // get poster data failed, try again
-                                continue
-                            }
-
-                            // get poster bytes from response
-                            val serverResponseGetPoster = cleanupResponse(o_clientTask.response)
-
-                            // get mediacollection record with uuid entry
-                            if (o_mediaCollectionRecordInstance.getOneRecord(mutableListOf("UUID"), mutableListOf(s_uuid) as List<Any>?)) {
-                                // update poster data
-                                o_mediaCollectionRecordInstance.ColumnPoster = serverResponseGetPoster
-                                o_mediaCollectionRecordInstance.updateRecord()
-                            }
-
-                            // get poster bytes length to check if we received all bytes
-                            o_clientTask.setRequest(
-                                "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/posterbyteslength?uuid=$s_uuid",
-                                net.forestany.forestj.lib.net.http.RequestType.GET
-                            )
-                            o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
-                            o_clientTask.authenticationPassword = authPassphrase
-                            o_clientTask.executeRequest()
-
-                            if (o_clientTask.returnCode != 200) {
-                                // get poster bytes length failed, try again
-                                continue
-                            }
-
-                            // validate response from get poster bytes length
-                            val serverResponseGetPosterLength = cleanupResponse(o_clientTask.response)
-
-                            // response should be an integer
-                            if (!net.forestany.forestj.lib.Helper.isInteger(serverResponseGetPosterLength)) {
-                                // get poster bytes length failed, response is not an integer
-                                continue
-                            }
-
-                            if (serverResponseGetPosterLength.toInt() == o_mediaCollectionRecordInstance.ColumnPoster.length) {
-                                // get poster data successful, received bytes equal local bytes of poster data
-                                break
-                            } else {
-                                // get poster data failed, amount of bytes on both sides are not equal
-                                Thread.sleep(2000)
-                            }
-
-                        }
-
-                        cnt++
-                    }
+                val textView = TextView(this).apply {
+                    text = message
+                    typeface = android.graphics.Typeface.MONOSPACE
+                    setPadding(40, 40, 40, 0)
+                    textSize = 16f
                 }
 
                 runOnUiThread {
-                    notifySnackbar(message = getString(R.string.main_sync_finished), view = findViewById(android.R.id.content))
+                    androidx.appcompat.app.AlertDialog.Builder(this@MainActivity, R.style.SelectionDialogStyle)
+                        .setTitle(getString(R.string.main_menu_statistic))
+                        .setView(textView)
+                        .setIcon(android.R.drawable.ic_dialog_info)
+                        .setPositiveButton(getString(R.string.text_ok)) { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
                 }
             } catch (e: Exception) {
                 runOnUiThread {
-                    errorSnackbar(message = "Error: ${e.message ?: "Exception in onSyncClicked method."}", view = findViewById(android.R.id.content))
+                    errorSnackbar(message = "Error: ${e.message ?: "Exception in onStatisticClicked method."}", view = findViewById(android.R.id.content))
                 }
             } finally {
                 runOnUiThread {
                     hideProgress()
-                    refresh()
                 }
             }
         }.start()
     }
 
-    private fun reloadPosterFromServer(s_uuid: String) {
-        var sslContext: javax.net.ssl.SSLContext? = null
-        lateinit var authPassphrase: String
-        lateinit var o_clientTask: net.forestany.forestj.lib.net.sock.task.send.https.TinyHttpsClient<javax.net.ssl.SSLSocket>
+    private fun onShowNoPosterClicked() {
+        showNoPoster = true
 
-        // create sslContext, socket task and socket instance
-        try {
-            // encrypt authentication password
-            val o_cryptography = net.forestany.forestj.lib.Cryptography(GlobalInstance.get().syncCommonPassphrase, net.forestany.forestj.lib.Cryptography.KEY256BIT)
-            val a_encrypted = o_cryptography.encrypt(GlobalInstance.get().syncAuthPassphrase?.toByteArray(java.nio.charset.StandardCharsets.UTF_8) ?: throw Exception(getString(R.string.main_sync_auth_passphrase_missing)))
-            authPassphrase = String(java.util.Base64.getEncoder().encode(a_encrypted), java.nio.charset.StandardCharsets.UTF_8)
+        filters = mutableMapOf()
+        sorts = mutableMapOf()
 
-            if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".p12")) {
-                // use .p12 truststore
-                try {
-                    sslContext = createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".p12", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
-                } catch (e: Exception) {
-                    e.printStackTrace()
+        searchFilter = ""
+        searchBackIcon.visibility = View.GONE
+        searchEditText.visibility = View.GONE
+        searchIcon.visibility = View.VISIBLE
+        searchEditText.setText("")
 
-                    if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks")) {
-                        // .p12 truststore did not work, use .bks truststore
-                        sslContext = try {
-                            createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            null
-                        }
-                    }
-                }
-            } else if (net.forestany.forestj.lib.io.File.exists(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks")) {
-                // use .bks truststore
-                sslContext = try {
-                    createMergedTrustManagerSSLContextInstance(filesDir.absolutePath + "/" + GlobalInstance.get().syncTruststoreFilename + ".bks", GlobalInstance.get().syncTruststorePassword ?: "no_pw")
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    null
-                }
-            }
+        updateBadge(filterBadgeTextView, filters.size)
+        updateBadge(sortBadgeTextView, sorts.size)
 
-            // create https config class
-            val o_clientConfig = net.forestany.forestj.lib.net.https.Config(
-                "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}",
-                net.forestany.forestj.lib.net.https.Mode.REST,
-                net.forestany.forestj.lib.net.sock.recv.ReceiveType.SOCKET
-            )
-
-            // create https client task
-            o_clientTask = net.forestany.forestj.lib.net.sock.task.send.https.TinyHttpsClient<javax.net.ssl.SSLSocket>(
-                o_clientConfig
-            )
-
-            // need this hack until we can set amountCyclesToleratingDelay to 0
-            o_clientTask.receiveMaxUnknownAmountInMiB = GlobalInstance.get().syncReceiveMaxUnknownAmountInMiB
-
-            // create client socket instance
-            val o_socketSend = net.forestany.forestj.lib.net.sock.send.SendTCP<javax.net.ssl.SSLSocket>(
-                javax.net.ssl.SSLSocket::class.java,
-                GlobalInstance.get().syncServerIp,
-                GlobalInstance.get().syncServerPort,
-                o_clientTask,
-                30000,
-                false,
-                1,
-                50,
-                GlobalInstance.get().syncReceiveBufferSize,
-                "127.0.0.1",
-                0,
-                sslContext
-            )
-
-            // set sending socket instance for https client
-            o_clientConfig.setSendingSocketInstanceForHttpClient(o_socketSend)
-        } catch (e: Exception) {
-            errorSnackbar(message = "Error: ${e.message ?: "Exception in reloadPosterFromServer method."}", view = findViewById(android.R.id.content))
-            return
-        }
-
-        deactivateSearchModeWithoutRequery()
-        showProgress()
-
-        Thread {
-            try {
-                // get all mediacollection records
-                val o_mediaCollectionRecordInstance = MediaCollectionRecord()
-
-                // any changes (insert/update) happens?
-                if (o_mediaCollectionRecordInstance.getRecord(mutableListOf<Any?>(s_uuid))) {
-                    // try multiple times to get poster data from server, in case of connection issues
-                    for (tries in 0..2) {
-                        // get poster data from server
-                        o_clientTask.setRequest(
-                            "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/poster?uuid=$s_uuid",
-                            net.forestany.forestj.lib.net.http.RequestType.GET
-                        )
-                        o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
-                        o_clientTask.authenticationPassword = authPassphrase
-                        o_clientTask.executeRequest()
-
-                        if (o_clientTask.returnCode != 200) {
-                            // get poster data failed, try again
-                            continue
-                        }
-
-                        // get poster bytes from response
-                        val serverResponseGetPoster = cleanupResponse(o_clientTask.response)
-
-                        // clear poster data
-                        o_mediaCollectionRecordInstance.ColumnPoster = null
-                        o_mediaCollectionRecordInstance.updateRecord()
-
-                        // update poster data
-                        o_mediaCollectionRecordInstance.ColumnPoster = serverResponseGetPoster
-                        o_mediaCollectionRecordInstance.updateRecord()
-
-                        // get poster bytes length to check if we received all bytes
-                        o_clientTask.setRequest(
-                            "https://${GlobalInstance.get().syncServerIp}:${GlobalInstance.get().syncServerPort}/posterbyteslength?uuid=$s_uuid",
-                            net.forestany.forestj.lib.net.http.RequestType.GET
-                        )
-                        o_clientTask.authenticationUser = GlobalInstance.get().syncAuthUser
-                        o_clientTask.authenticationPassword = authPassphrase
-                        o_clientTask.executeRequest()
-
-                        if (o_clientTask.returnCode != 200) {
-                            // get poster bytes length failed, try again
-                            continue
-                        }
-
-                        // validate response from get poster bytes length
-                        val serverResponseGetPosterLength = cleanupResponse(o_clientTask.response)
-
-                        // response should be an integer
-                        if (!net.forestany.forestj.lib.Helper.isInteger(serverResponseGetPosterLength)) {
-                            // get poster bytes length failed, response is not an integer
-                            continue
-                        }
-
-                        if (serverResponseGetPosterLength.toInt() == o_mediaCollectionRecordInstance.ColumnPoster.length) {
-                            // get poster data successful, received bytes equal local bytes of poster data
-                            break
-                        } else {
-                            // get poster data failed, amount of bytes on both sides are not equal
-                            Thread.sleep(2000)
-                        }
-                    }
-                }
-                runOnUiThread {
-                    notifySnackbar(message = getString(R.string.main_sync_finished), view = findViewById(android.R.id.content))
-                }
-            } catch (e: Exception) {
-                runOnUiThread {
-                    errorSnackbar(message = "Error: ${e.message ?: "Exception in reloadPosterFromServer method."}", view = findViewById(android.R.id.content))
-                }
-            } finally {
-                runOnUiThread {
-                    hideProgress()
-                    refresh()
-                }
-            }
-        }.start()
+        refreshData()
     }
 
-    private fun createMergedTrustManagerSSLContextInstance(pathToTruststore: String, truststorePassword: String): javax.net.ssl.SSLContext {
-        // load default android ca truststore
-        val defaultTrustStore = java.security.KeyStore.getInstance("AndroidCAStore").apply {
-            load(null)
-        }
+    private fun onShowLastSeenClicked() {
+        showLastSeen = true
 
-        // load own BKS truststore
-        val customTrustStore = java.security.KeyStore.getInstance("BKS").apply {
-            java.io.FileInputStream(java.io.File(pathToTruststore)).use { input ->
-                load(input, truststorePassword.toCharArray())
-            }
-        }
+        filters = mutableMapOf()
+        sorts = mutableMapOf()
 
-        // create merged truststore
-        val mergedTrustStore = java.security.KeyStore.getInstance(java.security.KeyStore.getDefaultType()).apply {
-            load(null)
+        searchFilter = ""
+        searchBackIcon.visibility = View.GONE
+        searchEditText.visibility = View.GONE
+        searchIcon.visibility = View.VISIBLE
+        searchEditText.setText("")
 
-            // copy from default android ca truststore
-            defaultTrustStore.aliases().iterator().forEach { alias ->
-                setCertificateEntry("system-$alias", defaultTrustStore.getCertificate(alias))
-            }
+        updateBadge(filterBadgeTextView, filters.size)
+        updateBadge(sortBadgeTextView, sorts.size)
 
-            // copy from own BKS truststore
-            customTrustStore.aliases().iterator().forEach { alias ->
-                setCertificateEntry("custom-$alias", customTrustStore.getCertificate(alias))
-            }
-        }
-
-        // create TrustManagerFactory with merged truststore
-        val tmf = javax.net.ssl.TrustManagerFactory.getInstance(javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm()).apply {
-            init(mergedTrustStore)
-        }
-
-        // create SSLContext with TLS 1.3
-        return javax.net.ssl.SSLContext.getInstance("TLSv1.3").apply {
-            init(null, tmf.trustManagers, java.security.SecureRandom())
-        }
-    }
-
-    private fun cleanupResponse(content: String?): String {
-        // need this hack until we can set amountCyclesToleratingDelay to 0
-        if (content == null) {
-            return "null"
-        }
-
-        var s_foo = content.trimEnd('\u0000')
-
-        if (s_foo.indexOf("HTTP/1.1 ") > 0) {
-            s_foo = s_foo.substring(0, s_foo.indexOf("HTTP/1.1 "))
-        }
-
-        return s_foo
-    }
-
-    private fun onStatisticClicked() {
-        var totalItems = 0
-        var totalMovieItems = 0
-        var totalMovieBlurayItems = 0
-        var totalMovieDVDItems = 0
-        var totalMovie4KItems = 0
-        var totalSeriesItems = 0
-        var totalSeriesBlurayItems = 0
-        var totalSeriesDVDItems = 0
-        var totalSeries4KItems = 0
-
-        // get all mediacollection records
-        val o_mediaCollectionRecordInstance = MediaCollectionRecord()
-
-        for (o_mediaCollectionRecord in o_mediaCollectionRecordInstance.getRecords(true)) {
-            // skip deleted records
-            if (o_mediaCollectionRecord.ColumnDeleted != null) {
-                continue
-            }
-
-            if (o_mediaCollectionRecord.ColumnType!!.contentEquals("Movie")) {
-                totalItems++
-                totalMovieItems++
-
-                if (o_mediaCollectionRecord.ColumnSubType.contains("bluray")) {
-                    totalMovieBlurayItems++
-                }
-
-                if (o_mediaCollectionRecord.ColumnSubType.contains("dvd")) {
-                    totalMovieDVDItems++
-                }
-
-                if (o_mediaCollectionRecord.ColumnSubType.contains("4k")) {
-                    totalMovie4KItems++
-                }
-            } else if (o_mediaCollectionRecord.ColumnType!!.contentEquals("Series")) {
-                totalItems++
-                totalSeriesItems++
-
-                if (o_mediaCollectionRecord.ColumnSubType.contains("bluray")) {
-                    totalSeriesBlurayItems++
-                }
-
-                if (o_mediaCollectionRecord.ColumnSubType.contains("dvd")) {
-                    totalSeriesDVDItems++
-                }
-
-                if (o_mediaCollectionRecord.ColumnSubType.contains("4k")) {
-                    totalSeries4KItems++
-                }
-            }
-        }
-
-        val message = """
-            |%-15s %5d
-            |
-            |%-15s %5d
-            |%-23s %5d
-            |%-23s %5d
-            |%-23s %5d
-            |
-            |%-15s %5d
-            |%-23s %5d
-            |%-23s %5d
-            |%-23s %5d
-        """.trimMargin().format(
-            "Total Items:", totalItems,
-            "Movie Items:", totalMovieItems,
-            "    Bluray check marks:", totalMovieBlurayItems,
-            "    DVD check marks:", totalMovieDVDItems,
-            "    4K check marks:", totalMovie4KItems,
-            "Series Items:", totalSeriesItems,
-            "    Bluray check marks:", totalSeriesBlurayItems,
-            "    DVD check marks:", totalSeriesDVDItems,
-            "    4K check marks:", totalSeries4KItems
-        )
-
-        val textView = TextView(this).apply {
-            text = message
-            typeface = android.graphics.Typeface.MONOSPACE
-            setPadding(40, 40, 40, 0)
-            textSize = 16f
-        }
-
-        androidx.appcompat.app.AlertDialog.Builder(this@MainActivity, R.style.SelectionDialogStyle)
-            .setTitle(getString(R.string.main_menu_statistic))
-            .setView(textView)
-            .setIcon(android.R.drawable.ic_dialog_info)
-            .setPositiveButton(getString(R.string.text_ok)) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
+        refreshData()
     }
 
     private fun initSettings() {
@@ -2266,14 +2642,26 @@ class MainActivity : AppCompatActivity() {
         ) {
             // wait 1 seconds, before doing auto sync
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                onSyncClicked()
-
                 GlobalInstance.get().lastAutoSynchronizationDateTime = java.time.LocalDateTime.now().withNano(0).toString()
 
                 getSharedPreferences("${packageName}_preferences", Context.MODE_PRIVATE).edit(commit = true) {
                     putString("last_auto_synchronization_datetime", java.time.LocalDateTime.now().withNano(0).toString())
                 }
+
+                onSyncClicked()
             }, 1000)
+        }
+
+        // give hint that notifications are not enabled for foreground services 'sync' and 'import'
+        if (!(getSystemService(NOTIFICATION_SERVICE) as NotificationManager).areNotificationsEnabled()) {
+            androidx.appcompat.app.AlertDialog.Builder(this@MainActivity, R.style.SelectionDialogStyle)
+                .setTitle(getString(R.string.main_notification_not_enabled_title))
+                .setMessage(getString(R.string.main_notification_not_enabled_message))
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .setPositiveButton(getString(R.string.text_ok)) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
         }
 
         Log.v(TAG, "onResume $TAG")

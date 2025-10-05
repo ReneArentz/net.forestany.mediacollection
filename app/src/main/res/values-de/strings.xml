@@ -24,6 +24,8 @@
     <string name="main_menu_import">Import</string>
     <string name="main_menu_settings">Einstellungen</string>
     <string name="main_menu_statistic">Statistik</string>
+    <string name="main_menu_no_poster">Elemente ohne Poster</string>
+    <string name="main_menu_last_seen">Zuletzt gesehen</string>
 
     <string name="main_menu_search_hint">Suche…</string>
 
@@ -100,13 +102,31 @@
     <string name="main_import_question">Sind Sie sicher, dass Sie alle Daten in der Datenbank zurücksetzen und die Dateisicherung importieren möchten?</string>
     <string name="main_import_not_truncate_mediacollection">Die Tabelle \'mediacollection\' konnte nicht geleert werden.</string>
     <string name="main_import_not_truncate_languages">Die Tabelle  \'language\' konnte nicht geleert werden.</string>
+    <string name="main_import_status">Importiere Daten von Dateien.</string>
     <string name="main_import_finished">Datenbank Import abgeschlossen.</string>
 
     <string name="main_sync_auth_passphrase_missing">Die Passphrase für die Synchronisierungsauthentifizierung fehlt.</string>
     <string name="main_sync_exception_post_all">Die Übertragung aller Daten konnte nicht abgeschlossen werden. Die Synchronisierung wurde abgebrochen. %1$d | %2$s</string>
     <string name="main_sync_exception_update_deleted">Das Festlegen des gelöschten Zeitstempels ist fehlgeschlagen für \'%1$s\'.</string>
     <string name="main_sync_exception_fetch_all">Das Abrufen aller Daten konnte nicht abgeschlossen werden. Die Synchronisierung wurde abgebrochen. %1$d | %2$s</string>
+    <string name="main_sync_sending_record_overview">Datensatz-Übersicht senden</string>
+    <string name="main_sync_sent_record_overview">Datensatz-Übersicht gesendet</string>
+    <string name="main_sync_sending_records">Datensätze senden</string>
+    <string name="main_sync_receiving_record_overview">Datensatz-Übersicht anfragen</string>
+    <string name="main_sync_received_record_overview">Datensatz-Übersicht empfangen</string>
+    <string name="main_sync_decoding_record_overview">Datensatz-Übersicht dekodieren</string>
+    <string name="main_sync_decoded_record_overview">Datensatz-Übersicht dekodiert</string>
+    <string name="main_sync_verify_received_records">Empfangene Datensätze überprüfen</string>
+    <string name="main_sync_request_records">Datensätze anfragen</string>
     <string name="main_sync_finished">Synchronisierung abgeschlossen.</string>
+
+    <string name="main_foreground_service_title">Media Collection Foreground Service</string>
+    <string name="main_foreground_service_progress_title_synchronise">Synchronisiere…</string>
+    <string name="main_foreground_service_progress_title_import">Importiere…</string>
+    <string name="main_foreground_service_starting">Starte…</string>
+
+    <string name="main_notification_not_enabled_title">Benachrichtigungs-Berechtigung</string>
+    <string name="main_notification_not_enabled_message">Die Berechtigungen für Benachrichtigungen für die aktuelle App sind nicht vollständig aktiviert.\nBitte aktivieren Sie die Berechtigungen für Benachrichtigungen unter Einstellungen -> Apps -> Media Collection -> App-Berechtigungen.</string>
 
     <string name="main_app_unknown_version">Die aktuelle App-Version kann nicht abgerufen werden.</string>
 

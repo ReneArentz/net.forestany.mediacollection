@@ -1,5 +1,6 @@
 package net.forestany.mediacollection.item
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -16,6 +17,7 @@ import com.google.android.material.textfield.TextInputEditText
 import net.forestany.mediacollection.R
 import net.forestany.mediacollection.main.LanguageRecord
 import net.forestany.mediacollection.main.Util.errorSnackbar
+import java.time.LocalDate
 
 class DetailsFragment : Fragment() {
     private val viewModel: ItemViewModel by activityViewModels()
@@ -109,10 +111,27 @@ class DetailsFragment : Fragment() {
                 }
             }
 
-            // only update last seen with long click on it
+            // update last seen with long click on it
             edittextLastSeen.setOnLongClickListener {
                 viewModel.updateRecord { it.ColumnLastSeen = java.time.LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0) }
                 return@setOnLongClickListener true
+            }
+
+            // open date picker dialog when clicked on last seen
+            edittextLastSeen.setOnClickListener {
+                val today = LocalDate.now()
+
+                val datePicker = DatePickerDialog(
+                    requireContext(),
+                    { _, year, month, day ->
+                        viewModel.updateRecord { it.ColumnLastSeen = java.time.LocalDateTime.of(year, month + 1, day, 0, 0, 0).withNano(0) }
+                    },
+                    today.year,
+                    today.monthValue - 1, // subtract 1 since DatePickerDialog expects 0-based month
+                    today.dayOfMonth
+                )
+
+                datePicker.show()
             }
 
             // handle special textView time conversion from integer minutes to 'Xh Ymin'

@@ -1,0 +1,3 @@
+Version Highlights:
+
+- First release of media collection application for android

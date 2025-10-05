@@ -7,6 +7,9 @@ import android.widget.TextView
 import androidx.core.graphics.toColorInt
 import com.google.android.material.snackbar.Snackbar
 import net.forestany.mediacollection.R
+import java.util.zip.Deflater
+import java.util.zip.Inflater
+
 
 object Util {
     fun customSnackbar(
@@ -107,5 +110,44 @@ object Util {
         }
 
         return result
+    }
+
+    // compress a hex string to Base64
+    fun compress(p_s_hexString: String): String {
+        // convert hex string to byte array
+        val input = net.forestany.forestj.lib.Helper.hexStringToBytes(p_s_hexString)
+
+        // compress
+        val deflater = Deflater()
+        deflater.setInput(input)
+        deflater.finish()
+
+        val buffer = ByteArray(input.size)
+        val compressedDataLength = deflater.deflate(buffer)
+        deflater.end()
+
+        val compressedBytes: ByteArray = buffer.copyOf(compressedDataLength)
+
+        // encode as Base64 string
+        return java.util.Base64.getEncoder().encodeToString(compressedBytes)
+    }
+
+    // decompress Base64 back to hex string
+    fun decompress(p_s_base64Compressed: String?): String {
+        // decode Base64 to compressed bytes
+        val compressedData: ByteArray = java.util.Base64.getDecoder().decode(p_s_base64Compressed)
+
+        // decompress
+        val inflater = Inflater()
+        inflater.setInput(compressedData)
+
+        val buffer = ByteArray(10_000_000) // big enough buffer
+        val length = inflater.inflate(buffer)
+        inflater.end()
+
+        val result: ByteArray = buffer.copyOf(length)
+
+        // convert back to hex string
+        return net.forestany.forestj.lib.Helper.bytesToHexString(result, false)
     }
 }
