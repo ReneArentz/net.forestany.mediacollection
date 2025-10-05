@@ -1,24 +1,12 @@
-Version Highlights:
-
 - Search field improvements:
-  - Now supports the special characters `#`, `@`, and `&`.
-  - Added special filter logic for "FiledUnder":
-    - If only one character is entered, the app searches for this character as uppercase at the beginning of the column, or as a standalone uppercase letter followed by a space.
-    - The same logic is now applied to the quick search feature in the toolbar.
-
+  - Supporting `#`, `@`, and `&`.
+  - Special filter logic "FiledUnder": one character only as uppercase
 - "Last seen" field:
-  - Now uses a date picker for easier date selection.
-  - Added new menu item for listing "last seen" elements.
-
+  - using a date picker
+  - new menu item: "last seen" elements.
 - UI enhancements:
-  - Added a new menu item for elements with no movie poster.
-  - Added a loading screen when gathering the statistics summary.
-
-- Synchronization improvements:
-  - Fixed issues causing sync to take too long with large collections.
-  - Sync is now faster by exchanging only a list of record summaries instead of full details.
-  - Added improved and more detailed sync status messages.
-  - Sync and import are now implemented as foreground services.
-
-- Foreground service notifications:
-  - The app now checks if notifications for foreground services are enabled and informs the user at startup if they are not.
+  - new menu item: elements with no movie poster.
+  - added loading screen when gathering the statistics summary.
+- Sync improvements
+- Sync and import now as foreground services.
+- App now checks if notifications for foreground services are enabled
