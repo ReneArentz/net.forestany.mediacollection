@@ -139,7 +139,7 @@ class GeneralFragment : Fragment() {
                 if (checkboxDVD.isChecked) selected.add("dvd")
                 if (checkbox4K.isChecked) selected.add("4k")
 
-                if (selected.size < 1) selected.add("NULL")
+                if (selected.isEmpty()) selected.add("NULL")
 
                 viewModel.updateRecord { it.ColumnSubType = selected.joinToString("+") }
             }

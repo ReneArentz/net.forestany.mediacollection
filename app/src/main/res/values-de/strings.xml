@@ -25,6 +25,7 @@
     <string name="main_menu_settings">Einstellungen</string>
     <string name="main_menu_statistic">Statistik</string>
     <string name="main_menu_no_poster">Elemente ohne Poster</string>
+    <string name="main_menu_random">Zufallstreffer</string>
     <string name="main_menu_last_seen">Zuletzt gesehen</string>
 
     <string name="main_menu_search_hint">Suche…</string>

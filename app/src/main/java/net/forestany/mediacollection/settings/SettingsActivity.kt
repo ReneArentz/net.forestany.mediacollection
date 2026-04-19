@@ -239,7 +239,7 @@ class SettingsActivity : AppCompatActivity() {
                     android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
                         intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                        startActivity(intent)
+                        startActivity(intent!!)
                         requireActivity().finish()
                         Runtime.getRuntime().exit(0)
                     }, 5000)

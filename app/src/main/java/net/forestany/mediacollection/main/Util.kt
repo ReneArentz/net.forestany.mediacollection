@@ -25,7 +25,7 @@ object Util {
         val snackbar = Snackbar.make(view, message, length)
 
         if (anchorView != null) {
-            snackbar.setAnchorView(anchorView)
+            snackbar.anchorView = anchorView
         }
 
         snackbar.setBackgroundTint(backgroundColor)

@@ -25,6 +25,7 @@
     <string name="main_menu_settings">Settings</string>
     <string name="main_menu_statistic">Statistic</string>
     <string name="main_menu_no_poster">Items with no poster</string>
+    <string name="main_menu_random">Pick Random</string>
     <string name="main_menu_last_seen">Last seen</string>
 
     <string name="main_menu_search_hint">Search…</string>

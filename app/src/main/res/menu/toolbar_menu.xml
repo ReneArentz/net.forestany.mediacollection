@@ -42,6 +42,11 @@
         android:icon="@drawable/ic_no_poster"
         app:showAsAction="never" />
     <item
+        android:id="@+id/mI_showRandomOne"
+        android:title="@string/main_menu_random"
+        android:icon="@drawable/ic_random"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/mI_showLastSeen"
         android:title="@string/main_menu_last_seen"
         android:icon="@drawable/ic_last_seen"

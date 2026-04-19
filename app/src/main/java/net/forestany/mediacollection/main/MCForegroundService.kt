@@ -180,11 +180,11 @@ class MCForegroundService : Service() {
                 o_clientConfig
             )
 
-            // need this hack until we can set amountCyclesToleratingDelay to 0
+            // we can set expected unknown receive input in MiB
             o_clientTask.receiveMaxUnknownAmountInMiB = GlobalInstance.get().syncReceiveMaxUnknownAmountInMiB
 
             // create client socket instance
-            val o_socketSend = net.forestany.forestj.lib.net.sock.send.SendTCP<javax.net.ssl.SSLSocket>(
+            val o_socketSend = net.forestany.forestj.lib.net.sock.send.SendTCP(
                 javax.net.ssl.SSLSocket::class.java,
                 GlobalInstance.get().syncServerIp,
                 GlobalInstance.get().syncServerPort,
@@ -201,7 +201,7 @@ class MCForegroundService : Service() {
 
             // set sending socket instance for https client
             o_clientConfig.setSendingSocketInstanceForHttpClient(o_socketSend)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             return
         }
 
@@ -458,7 +458,7 @@ class MCForegroundService : Service() {
             val getRequestList = mutableListOf<String>()
 
             // iterate all received records
-            if (o_jsonMediaCollection.Records.size > 0) {
+            if (o_jsonMediaCollection.Records.isNotEmpty()) {
                 val o_mediaCollectionRecordInstance = MediaCollectionRecord()
                 cnt = 1
 
@@ -660,7 +660,7 @@ class MCForegroundService : Service() {
                             } else {
                                 try {
                                     Util.decompress(serverResponseGetPoster)
-                                } catch (exc: Exception) {
+                                } catch (_: Exception) {
                                     Log.e(TAG, "decompress failed for '${requestCommands[0]}'")
                                     null
                                 }
@@ -829,7 +829,7 @@ class MCForegroundService : Service() {
                 throw Exception(getString(R.string.main_import_not_truncate_languages))
             }
 
-            if (o_jsonMediaCollection.Languages.size > 0) {
+            if (o_jsonMediaCollection.Languages.isNotEmpty()) {
                 for (jsonLanguageRecord in o_jsonMediaCollection.Languages) {
                     if (jsonLanguageRecord.insertRecord() < 0) {
                         Log.e(TAG, "Could not insert record with '${jsonLanguageRecord.ColumnLanguage}'.")
@@ -837,7 +837,7 @@ class MCForegroundService : Service() {
                 }
             }
 
-            if (o_jsonMediaCollection.Records.size > 0) {
+            if (o_jsonMediaCollection.Records.isNotEmpty()) {
                 for (jsonMediaCollectionRecord in o_jsonMediaCollection.Records) {
                     if (jsonMediaCollectionRecord.insertRecord() < 0) {
                         Log.e(TAG, "Could not insert record with '${jsonMediaCollectionRecord.ColumnTitle}'.")

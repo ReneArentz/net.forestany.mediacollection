@@ -2,8 +2,6 @@ package net.forestany.mediacollection.item
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -224,7 +222,7 @@ class ItemViewActivity : AppCompatActivity() {
                     // add search results to media item list
                     for (mediaItem in a_foo.Results) {
                         // bitmap for poster preview
-                        var bitmap: Bitmap? = null
+                        var bitmap: android.graphics.Bitmap? = null
 
                         // load poster preview if poster path is not null or empty
                         if (!mediaItem.PosterPath.isNullOrEmpty()) {
@@ -247,7 +245,7 @@ class ItemViewActivity : AppCompatActivity() {
                         // no poster path or downloading poster of media item failed, so we just show 'no_image.jpg'
                         if (bitmap == null) {
                             val inputStream = this@ItemViewActivity.assets.open("no_image.jpg")
-                            bitmap = BitmapFactory.decodeStream(inputStream)
+                            bitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
                             inputStream.close()
                         }
 
@@ -275,7 +273,7 @@ class ItemViewActivity : AppCompatActivity() {
                     // add search results to media item list
                     for (mediaItem in a_foo.Results) {
                         // bitmap for poster preview
-                        var bitmap: Bitmap? = null
+                        var bitmap: android.graphics.Bitmap? = null
 
                         // load poster preview if poster path is not null or empty
                         if (!mediaItem.PosterPath.isNullOrEmpty()) {
@@ -298,7 +296,7 @@ class ItemViewActivity : AppCompatActivity() {
                         // no poster path or downloading poster of media item failed, so we just show 'no_image.jpg'
                         if (bitmap == null) {
                             val inputStream = this@ItemViewActivity.assets.open("no_image.jpg")
-                            bitmap = BitmapFactory.decodeStream(inputStream)
+                            bitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
                             inputStream.close()
                         }
 
@@ -707,7 +705,7 @@ class ItemViewActivity : AppCompatActivity() {
                     val result = checkRecords.getRecords(true)
 
                     // we found record(s) which are identical and not deleted
-                    if (result.size > 0) {
+                    if (result.isNotEmpty()) {
                         throw Exception(getString(R.string.itemview_enter_new_record_already_in_db))
                     }
                 }
@@ -763,7 +761,7 @@ class ItemViewActivity : AppCompatActivity() {
                     }
                 }
 
-                if (a_foo.size > 0) {
+                if (a_foo.isNotEmpty()) {
                     record.ColumnLanguages = a_foo.joinToString(" ")
                 } else {
                     record.ColumnLanguages = null
@@ -811,7 +809,7 @@ class ItemViewActivity : AppCompatActivity() {
                     }
                 }
 
-                if (a_foo.size > 0) {
+                if (a_foo.isNotEmpty()) {
                     record.ColumnSubtitles = a_foo.joinToString(" ")
                 } else {
                     record.ColumnSubtitles = null
@@ -940,7 +938,7 @@ class ItemViewActivity : AppCompatActivity() {
             }
 
             // compress image to desired width
-            var bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+            var bitmap = android.graphics.BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
             val factor = GlobalInstance.get().posterDesiredWidth / bitmap.width.toFloat()
             bitmap = bitmap.scale(GlobalInstance.get().posterDesiredWidth, (bitmap.height * factor).toInt())
             val stream = ByteArrayOutputStream()
@@ -954,7 +952,7 @@ class ItemViewActivity : AppCompatActivity() {
         }
     }
 
-    private fun downloadImageReturnBitmap(imageUrl: String?) : Bitmap? {
+    private fun downloadImageReturnBitmap(imageUrl: String?) : android.graphics.Bitmap? {
         try {
             if (imageUrl == null) return null
 
@@ -967,7 +965,7 @@ class ItemViewActivity : AppCompatActivity() {
             // get input stream and bytes
             val inputStream = connection.inputStream
             val byteArray = inputStream.readBytes()
-            return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+            return android.graphics.BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
         } catch (_: Exception) {
             return null
         }

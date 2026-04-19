@@ -13,7 +13,7 @@ This app helps you easily catalog and manage your personal blu-ray and dvd colle
 
 Built using a custom lightweight framework with minimal dependencies, this app is focused on performance and long-term stability. All data stays on your device — your collection is private and secure.
 
-For advanced users, the app also offers an optional synchronization feature. To use this, you must host and administer your own server. Synchronization requires a REST web service that you create yourself or the official open-source server project ([net.forestany.mediacollectionrest.webservice](https://github.com/ReneArentz/net.forestany.mediacollectionrest.webservice)  ). This ensures that all data remains entirely under your control, with no external services involved.
+For added convenience, the app can optionally use TMDb (The Movie Database) to autofill meta information about your media items. For advanced users, the app also offers an optional synchronization feature. To use this, you must host and administer your own server. Synchronization requires a REST web service that you create yourself or the official open-source server project ([net.forestany.mediacollectionrest.webservice](https://github.com/ReneArentz/net.forestany.mediacollectionrest.webservice)). This ensures that all data remains entirely under your control, with no external services involved.
 
 Ideal for collectors who want a fast, no-frills way to keep track of their media library while maintaining full ownership and privacy of their data.
 
