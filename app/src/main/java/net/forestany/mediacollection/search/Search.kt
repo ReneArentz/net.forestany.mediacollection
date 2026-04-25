@@ -55,6 +55,7 @@ class Search(private val context: android.content.Context) {
     private suspend fun fetchURL(sUrl: String): Pair<Int, String?> = withContext(Dispatchers.IO) {
         try {
             // prepare web request GET
+            android.util.Log.v("fetchURL", sUrl)
             val o_webRequestGet: net.forestany.forestj.lib.net.http.Request = net.forestany.forestj.lib.net.http.Request(net.forestany.forestj.lib.net.http.RequestType.GET, sUrl, "", 0)
             val s_foo = o_webRequestGet.executeWebRequest()
             // return request response code and response content
@@ -195,7 +196,7 @@ class Search(private val context: android.content.Context) {
         //var start = 0
         //while (start < s_foo.length) {
         //    val end = minOf(start + 800, s_foo.length)
-        //    Log.v(s_foo.substring(start, end))
+        //    android.util.Log.v("processJson", s_foo.substring(start, end))
         //    start = end
         //}
 

@@ -30,6 +30,7 @@ public class SeriesDetails {
     public java.util.List<ProductionCompany> ProductionCompanies = new java.util.ArrayList<ProductionCompany>();
     public java.util.List<ProductionCountry> ProductionCountries = new java.util.ArrayList<ProductionCountry>();
     public java.util.List<Season> Seasons = new java.util.ArrayList<Season>();
+    public boolean Softcore;
     public java.util.List<SpokenLanguage> SpokenLanguages = new java.util.ArrayList<SpokenLanguage>();
     public String Status;
     public String Tagline;

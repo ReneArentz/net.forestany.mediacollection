@@ -14,6 +14,7 @@ public class MovieSearchResult {
     public double Popularity;
     public String PosterPath;
     public String ReleaseDate;
+    public boolean Softcore;
     public String Title;
     public boolean Video;
     public double VoteAverage;

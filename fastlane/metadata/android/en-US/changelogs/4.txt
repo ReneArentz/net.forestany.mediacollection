@@ -1,0 +1,7 @@
+Version Highlights:
+
+- Updated for Android Studio Panda 2 | 2025.3.2
+- Improved menu item "Last seen" so that all items are sorted and not only the first page(10 items).
+- New: You can now pick a random record directly from the menu with one click.
+- Fixed import functionality which had OutOfMemory Exception with a large collection of records to import.
+- Updated TMDB JSON schema for movies and TV shows

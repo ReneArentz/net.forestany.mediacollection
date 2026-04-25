@@ -15,6 +15,7 @@ public class SeriesSearchResult {
     public double Popularity;
     public String PosterPath;
     public String FirstAirDate;
+    public boolean Softcore;
     public String Name;
     public double VoteAverage;
     public int VoteCount;
