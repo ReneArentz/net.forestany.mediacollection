@@ -31,4 +31,4 @@ Ideal for collectors who want a fast, no-frills way to keep track of their media
 
 ## License
 
-This project is open source under the GNU GPL v3 license — feel free to host, modify, and improve it while maintaining attribution.
+This project is open source under the **[GNU GPL v3.0 or later license](https://spdx.org/licenses/GPL-3.0-or-later.html)** — feel free to host, modify, and improve it while maintaining attribution.
