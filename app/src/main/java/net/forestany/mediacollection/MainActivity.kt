@@ -105,6 +105,17 @@ class MainActivity : AppCompatActivity() {
     private var dbEmpty = true
 
     companion object {
+        var sqlitejdbcFailed = false
+
+        init {
+            try {
+                System.loadLibrary("sqlitejdbc")
+            } catch (e: UnsatisfiedLinkError) {
+                sqlitejdbcFailed = true
+                Log.e("SQLiteJDBC", "Failed to load native library", e)
+            }
+        }
+
         private const val TAG = "MainActivity"
 
         const val RETURN_CODE_RELOAD = 6158
@@ -362,6 +373,11 @@ class MainActivity : AppCompatActivity() {
             }
 
             initSettings()
+
+            // check sqlite-jdbc library
+            if (sqlitejdbcFailed) {
+                throw Exception("Failed to load native library")
+            }
 
             // filter columns must be set with initSettings method
             if (this.filterColumns.isEmpty()) {

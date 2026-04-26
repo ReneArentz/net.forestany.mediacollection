@@ -36,6 +36,10 @@
 							"type": "integer",
 							"mapping": "Id"
 						},
+						"title": {
+							"type": "string",
+							"mapping": "Title"
+						},
 						"original_language": {
 							"type": "string",
 							"mapping": "OriginalLanguage"
@@ -60,9 +64,9 @@
 							"type": "string",
 							"mapping": "ReleaseDate"
 						},
-						"title": {
-							"type": "string",
-							"mapping": "Title"
+						"softcore": {
+							"type": "boolean",
+							"mapping": "Softcore"
 						},
 						"video": {
 							"type": "boolean",

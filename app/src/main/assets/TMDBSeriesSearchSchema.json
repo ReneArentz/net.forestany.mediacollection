@@ -67,6 +67,10 @@
 							"type": "string",
 							"mapping": "FirstAirDate"
 						},
+						"softcore": {
+							"type": "boolean",
+							"mapping": "Softcore"
+						},
 						"name": {
 							"type": "string",
 							"mapping": "Name"

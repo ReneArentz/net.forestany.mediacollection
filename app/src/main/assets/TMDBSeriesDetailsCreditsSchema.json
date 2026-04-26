@@ -320,6 +320,10 @@
                 }
             }
         },
+        "softcore": {
+            "type": "boolean",
+            "mapping": "Softcore"
+        },
         "spoken_languages": {
             "type": "array",
             "mapping": "SpokenLanguages:java.util.List",
