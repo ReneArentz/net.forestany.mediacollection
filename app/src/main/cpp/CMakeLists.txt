@@ -1,4 +1,9 @@
 # using sqlite-amalgamation-3530000
+
+# For several frameworks, differences in build paths also means differences in build ids – so with some luck, those were solved alongside.
+# If not, this has to be solved upstream by disabling them. add_link_options should solve these differences: 
+add_link_options(-Wl,--build-id=none)
+
 # get NativeDB.c from xerial sqlite-jdbc src/main/java/org/sqlite/core
 
 cmake_minimum_required(VERSION 3.22)
